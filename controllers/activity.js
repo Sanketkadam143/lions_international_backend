@@ -3,7 +3,7 @@ const db = connection();
 
 export const getActivity = async (req, res) => {
   try {
-    const sql = "SELECT distinct activityType FROM activities";
+    const sql = "SELECT distinct type FROM activitytype";
     const data = await db.promise().query(sql);
     return res.status(200).json(data[0]);
   } catch (error) {
@@ -14,10 +14,10 @@ export const getActivity = async (req, res) => {
 
 export const getSubtype = async (req, res) => {
   try {
-    const { activityType } = req.query; 
-    const sql = `SELECT DISTINCT activitySubType FROM activities WHERE activityType = ?`;
+    const { type } = req.query; 
+    const sql = `SELECT DISTINCT subtype FROM activitytype WHERE type = ?`;
     const [data] = await 
-    db.promise().query(sql, [activityType]);
+    db.promise().query(sql, [type]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -27,9 +27,9 @@ export const getSubtype = async (req, res) => {
 
 export const getCategory = async (req, res) => {
   try {
-    const { activitySubType } = req.query;
-    const sql = `SELECT DISTINCT activityCategory FROM activities WHERE activitySubType = ?`;
-    const [data] = await db.promise().query(sql, [activitySubType]);
+    const { subtype } = req.query;
+    const sql = `SELECT DISTINCT category FROM activitytype WHERE subtype = ?`;
+    const [data] = await db.promise().query(sql, [subtype]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
