@@ -12,6 +12,7 @@ const JWT_EXPIRE = process.env.JWT_EXPIRE;
 
 export const signIn = async (req, res) => {
   const { memberId, password } = req.body;
+  
   try {
     const [rows] = await db
       .promise()
