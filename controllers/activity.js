@@ -36,6 +36,17 @@ export const getCategory = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+export const getPlaceholder = async (req, res) => {
+  try {
+    const {category } = req.query;
+    const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category = ?`;
+    const [data] = await db.promise().query(sql, [category]);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
 
 export const addActivity = async (req, res) => {
   const {
@@ -52,7 +63,7 @@ export const addActivity = async (req, res) => {
     activitySubType,
     activityCategory,
     place,
-    authorId,
+    placeHolder,
     clubId
   } = req.body;
   try {
@@ -71,7 +82,7 @@ export const addActivity = async (req, res) => {
         activityType,
         activitySubType,
         activityCategory,
-        place,authorId,
+        place,placeHolder,
         clubId
       }
     );
