@@ -30,6 +30,7 @@ export const signIn = async (req, res) => {
         title: rows[0].title,
         id: rows[0].id,
         clubName: rows[0].clubName,
+        clubId:rows[0].clubId,
         firstName: rows[0].firstName,
         lastName:rows[0].lastName,
         detailsRequired:detailsRequired,

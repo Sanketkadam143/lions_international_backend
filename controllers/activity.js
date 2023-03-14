@@ -14,10 +14,9 @@ export const getActivity = async (req, res) => {
 
 export const getSubtype = async (req, res) => {
   try {
-    const { type } = req.query; 
+    const { type } = req.query;
     const sql = `SELECT DISTINCT subtype FROM activitytype WHERE type = ?`;
-    const [data] = await 
-    db.promise().query(sql, [type]);
+    const [data] = await db.promise().query(sql, [type]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -37,6 +36,19 @@ export const getCategory = async (req, res) => {
   }
 };
 
+export const getPlaceholder = async (req, res) => {
+  try {
+    const {category } = req.query;
+    const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category = ?`;
+    const [data] = await db.promise().query(sql, [category]);
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
 export const addActivity = async (req, res) => {
   const {
     amount,
@@ -52,32 +64,39 @@ export const addActivity = async (req, res) => {
     activitySubType,
     activityCategory,
     place,
-    authorId,
-    clubId
+    placeHolderValue,
   } = req.body;
+
+  //const clubId=req.clubId;
+  const clubId=1;
   try {
-    await db.promise().query(
-      "INSERT INTO activities SET ?",
-      {
-        amount,
-        activityTitle,
-        city,
-        date,
-        cabinetOfficers,
-        description,
-        lionHours,
-        mediaCoverage,
-        peopleServed,
-        activityType,
-        activitySubType,
-        activityCategory,
-        place,authorId,
-        clubId
-      }
-    );
-   
+    const [rows] = await db.promise().query("SELECT star FROM activitytype WHERE category=?", [activityCategory]);
+    const star = rows[0].star;    
+    const activityStars=placeHolderValue*star;
+    const placeHolder=placeHolderValue;
+    await db.promise().query("UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;", [activityStars, clubId]);
+    await db.promise().query("INSERT INTO activities SET ?", {
+      amount,
+      activityTitle,
+      city,
+      date,
+      cabinetOfficers,
+      description,
+      lionHours,
+      mediaCoverage,
+      peopleServed,
+      activityType,
+      activitySubType,
+      activityCategory,
+      place,
+      placeHolder,
+      clubId,
+      activityStars
+    });
+
+
+
     return res.status(200).json({ successMessage: "Activity submitted" });
-   
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
