@@ -48,8 +48,22 @@ export const getPlaceholder = async (req, res) => {
   }
 };
 
+export const getReportedActivity = async (req,res)=>{
+  const clubId=req.clubId;
+  try {
+    const sql=`SELECT * FROM activities WHERE clubId=?`;
+    const [data]=await db.promise().query(sql,[clubId]);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+
+}
+
 
 export const addActivity = async (req, res) => {
+
   const {
     amount,
     activityTitle,
@@ -67,8 +81,7 @@ export const addActivity = async (req, res) => {
     placeHolderValue,
   } = req.body;
 
-  //const clubId=req.clubId;
-  const clubId=1;
+  const clubId=req.clubId;
   try {
     const [rows] = await db.promise().query("SELECT star FROM activitytype WHERE category=?", [activityCategory]);
     const star = rows[0].star;    
@@ -93,8 +106,6 @@ export const addActivity = async (req, res) => {
       clubId,
       activityStars
     });
-
-
 
     return res.status(200).json({ successMessage: "Activity submitted" });
   } catch (error) {
