@@ -1,10 +1,12 @@
 import express from "express";
-import { addNews } from "../controllers/news.js";
-
+import { reportedNews,newsReporting} from "../controllers/news.js";
+import auth from '../middleware/auth.js';
 
 const  router=express.Router();
 
-router.post('/addNews',addNews);
+router.get('/reportednews',auth,reportedNews);
+router.post('/newsreporting',auth,newsReporting);
+
 
 
 export default router;

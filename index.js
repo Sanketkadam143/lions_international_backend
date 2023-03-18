@@ -6,7 +6,9 @@ import * as dotenv from "dotenv";
 import auth from "./routes/login.js";
 import user from "./routes/user.js";
 import activity from './routes/activity.js';
+import adminReport from './routes/adminReports.js';
 import news from './routes/news.js';
+
 dotenv.config();
 const app = express();
 const db = connection();
