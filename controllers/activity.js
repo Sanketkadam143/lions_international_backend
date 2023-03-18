@@ -85,7 +85,7 @@ export const addActivity = async (req, res) => {
   try {
     const [rows] = await db.promise().query("SELECT star FROM activitytype WHERE category=?", [activityCategory]);
     const star = rows[0].star;    
-    const activityStars=placeHolderValue*star;
+    const activityStars= star*(placeHolderValue || 1);;
     const placeHolder=placeHolderValue;
     await db.promise().query("UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;", [activityStars, clubId]);
     await db.promise().query("INSERT INTO activities SET ?", {
