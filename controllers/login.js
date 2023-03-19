@@ -5,7 +5,7 @@ import validator from "validator";
 import connection from "../config/dbconnection.js";
 import dotenv from "dotenv";
 dotenv.config();
-const db = connection();
+const db = await connection();
 
 const JWTKEY = process.env.JWTKEY;
 const JWT_EXPIRE = process.env.JWT_EXPIRE;

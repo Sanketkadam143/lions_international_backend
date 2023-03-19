@@ -10,7 +10,7 @@ import news from './routes/news.js';
 
 dotenv.config();
 const app = express();
-const db = connection();
+const db = await connection();
 
 const PORT = process.env.PORT || 5000;
 
