@@ -1,6 +1,6 @@
 import connection from "../config/dbconnection.js";
 import { calculatePoints } from "../utils/calculatePoints.js";
-const db = connection();
+const db = await connection();
 
 export const getReports = async (req, res) => {
   const { month } = req.query;

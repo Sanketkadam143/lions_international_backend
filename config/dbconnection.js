@@ -3,29 +3,39 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const HOST = process.env.HOST;
-const USERNAME = process.env.USERNAME;
-const PASSWORD = process.env.PASSWORD;
-const DATABASE = process.env.DATABASE;
+const HOST = process.env.MYSQLHOST;
+const USERNAME = process.env.MYSQLUSER;
+const PASSWORD = process.env.MYSQLPASSWORD;
+const DATABASE = process.env.MYSQLDATABASE;
+const PORT = process.env.MYSQLPORT;
 
 let connection;
 
 function createConnection() {
-    if(connection) return connection;
-    connection = mysql.createConnection({
+  return new Promise((resolve, reject) => {
+    if (connection) {
+      resolve(connection);
+    } else {
+      connection = mysql.createConnection({
         host: HOST,
         user: USERNAME,
         password: PASSWORD,
-        database: DATABASE
-    });
-    connection.connect((err) => {
+        database: DATABASE,
+        port: PORT,
+      });
+
+      connection.connect((err) => {
         if (err) {
-            console.log(`Error connecting to the database: ${err}`);
+          console.log(`Error connecting to the database: ${err}`);
+          reject(err);
         } else {
-            console.log("Successfully connected to the database.");
+          console.log("Successfully connected to the database.");
+          resolve(connection);
         }
-    });
-    return connection;
+      });
+    }
+  });
 }
+
 
 export default createConnection;

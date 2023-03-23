@@ -1,5 +1,5 @@
 import connection from "../config/dbconnection.js";
-const db = connection();
+const db = await connection();
 
 export const getActivity = async (req, res) => {
   try {
@@ -38,7 +38,7 @@ export const getCategory = async (req, res) => {
 
 export const getPlaceholder = async (req, res) => {
   try {
-    const {category } = req.query;
+    const { category } = req.query;
     const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category = ?`;
     const [data] = await db.promise().query(sql, [category]);
     return res.status(200).json(data[0]);
@@ -48,22 +48,19 @@ export const getPlaceholder = async (req, res) => {
   }
 };
 
-export const getReportedActivity = async (req,res)=>{
-  const clubId=req.clubId;
+export const getReportedActivity = async (req, res) => {
+  const clubId = req.clubId;
   try {
-    const sql=`SELECT * FROM activities WHERE clubId=?`;
-    const [data]=await db.promise().query(sql,[clubId]);
+    const sql = `SELECT * FROM activities WHERE clubId=?`;
+    const [data] = await db.promise().query(sql, [clubId]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
-
-}
-
+};
 
 export const addActivity = async (req, res) => {
-
   const {
     amount,
     activityTitle,
@@ -80,13 +77,22 @@ export const addActivity = async (req, res) => {
     placeHolderValue,
   } = req.body;
 
-  const clubId=req.clubId;
+  const clubId = req.clubId;
   try {
-    const [rows] = await db.promise().query("SELECT star FROM activitytype WHERE category=?", [activityCategory]);
-    const star = rows[0].star;    
-    const activityStars= star*(placeHolderValue || 1);;
-    const placeHolder=placeHolderValue;
-    await db.promise().query("UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;", [activityStars, clubId]);
+    const [rows] = await db
+      .promise()
+      .query("SELECT star FROM activitytype WHERE category=?", [
+        activityCategory,
+      ]);
+    const star = rows[0].star;
+    const activityStars = star * (placeHolderValue || 1);
+    const placeHolder = placeHolderValue;
+    await db
+      .promise()
+      .query(
+        "UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;",
+        [activityStars, clubId]
+      );
     await db.promise().query("INSERT INTO activities SET ?", {
       amount,
       activityTitle,
@@ -102,10 +108,14 @@ export const addActivity = async (req, res) => {
       place,
       placeHolder,
       clubId,
-      activityStars
+      activityStars,
     });
 
-    return res.status(200).json({ successMessage: "Activity submitted" });
+    return res
+      .status(200)
+      .json({
+        successMessage: `Activity submitted,You earned ${activityStars} stars !!`,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

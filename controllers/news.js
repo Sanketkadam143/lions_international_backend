@@ -1,5 +1,5 @@
 import connection from "../config/dbconnection.js";
-const db = connection();
+const db = await connection();
 
 export const reportedNews = async (req, res) => {
     const clubId=req.clubId;
