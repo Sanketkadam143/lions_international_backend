@@ -3,9 +3,11 @@ const db = await connection();
 
 export const reportedNews = async (req, res) => {
     const clubId=req.clubId;
+    console.log(clubId);
   try {
     const sql = "SELECT * FROM news WHERE clubId=?";
     const data = await db.promise().query(sql,[clubId]);
+   
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -14,7 +16,7 @@ export const reportedNews = async (req, res) => {
 };
 
 export const newsReporting = async (req, res) => {
-    const clubId=req.clubId;
+  const clubId=req.clubId;
   try {
     const sql = "SELECT * FROM news WHERE clubId=?";
     const data = await db.promise().query(sql,[clubId]);
