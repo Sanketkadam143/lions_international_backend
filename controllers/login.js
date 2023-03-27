@@ -45,6 +45,7 @@ export const signIn = async (req, res) => {
       successMessage: "You are Successfully Logged in",
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
