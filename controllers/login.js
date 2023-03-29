@@ -33,6 +33,7 @@ export const signIn = async (req, res) => {
         clubId: rows[0].clubId,
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
+        picture:rows[0].profilePicture,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,

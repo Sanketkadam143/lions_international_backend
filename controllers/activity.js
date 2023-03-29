@@ -1,5 +1,9 @@
 import connection from "../config/dbconnection.js";
+import sharp from "sharp";
+import path from "path";
 const db = await connection();
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 export const getActivity = async (req, res) => {
   try {
@@ -79,6 +83,10 @@ export const addActivity = async (req, res) => {
 
   const clubId = req.clubId;
   try {
+    const image_path = `/images/activity/${req.file.originalname}`;
+    const folder = path.resolve(__dirname, "..") + image_path;
+    await sharp(req.file.buffer).png().toFile(folder);
+
     const [rows] = await db
       .promise()
       .query("SELECT star FROM activitytype WHERE category=?", [
@@ -109,6 +117,7 @@ export const addActivity = async (req, res) => {
       placeHolder,
       clubId,
       activityStars,
+      image_path
     });
 
     return res
