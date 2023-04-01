@@ -9,6 +9,7 @@ import adminReport from './routes/adminReports.js';
 import news from './routes/news.js';
 import member from './routes/member.js';
 import images from './routes/images.js';
+import clubs from './routes/clubs.js';
 
 dotenv.config();
 const app = express();
@@ -31,7 +32,8 @@ app.use("/api/activity",activity);
 app.use("/api/adminreporting",adminReport)
 app.use("/api/news",news);
 app.use("/api/member",member);
-app.use("/api/images",images)
+app.use("/api/images",images);
+app.use("/api/clubs",clubs);
 
 app.listen(PORT, () =>
   console.log(`Server Running on Port: http://localhost:${PORT}`)

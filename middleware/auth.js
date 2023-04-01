@@ -15,7 +15,9 @@ const auth = async (req, res, next) => {
 
     decodedData = jwt.verify(token, JWTKEY);
     req.userId = decodedData?.id;
-    req.clubId =  decodedData?.clubId;
+    req.clubId = decodedData?.clubId;
+    req.regionName = decodedData?.regionName;
+    req.zoneName = decodedData?.zoneName;
     next();
   } catch (error) {
     console.log(error);
