@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { passwordStrength } from "check-password-strength";
 import validator from "validator";
@@ -34,6 +35,10 @@ export const signIn = async (req, res) => {
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
         picture:rows[0].profilePicture,
+        regionName:rows[0].regionName,
+        zoneName:rows[0].zoneName,
+        email:rows[0].email,
+        phone:rows[0].phone,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,
@@ -97,6 +102,30 @@ export const resetPassword = async (req, res) => {
         .status(500)
         .json({ message: "Something went wrong try again" });
     }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await db.promise().query("SELECT * FROM users WHERE email = ?", [email]);
+    if (user.length === 0) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const token = crypto.randomBytes(20).toString("hex");
+    
+    await db.promise().query("UPDATE users SET reset_token = ? WHERE id = ?", [token, user[0].id]);
+
+    const resetLink = `https://example.com/reset-password?token=${token}`;
+   
+   // await sendMail(resetLink,email);
+
+    return res.status(200).json({ message: "Email sent with reset password link" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

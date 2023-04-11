@@ -22,6 +22,7 @@ export const memberProfile = async (req, res) => {
     return res.status(500).json({ message: "Error While Fetching Profile" });
   }
 };
+
 export const updateProfile = async (req, res) => {
   const {
     firstName,
@@ -41,12 +42,13 @@ export const updateProfile = async (req, res) => {
   } = req.body;
   const clubId = req.clubId;
   const id = req.userId;
+  const verified=1;
   let imagePath;
 
   try {
     if (req.file) {
-      const extension = path.extname(req.file.originalname);
-      const newFileName = `${firstName}${lastName}${extension}`;
+      const extension = ".png";
+      const newFileName = `${firstName.toLowerCase()}${lastName.toLowerCase()}${extension}`;
       imagePath = `/images/profile/${newFileName}`;
       const folder = path.resolve(__dirname, "..") + imagePath;
       await sharp(req.file.buffer).png().toFile(folder);
@@ -66,6 +68,7 @@ export const updateProfile = async (req, res) => {
       dob,
       occupation,
       gender,
+      verified,
     };
 
     const sql = `UPDATE users 
@@ -82,7 +85,9 @@ export const updateProfile = async (req, res) => {
                spouseName = ?,
                dob = ?,
                occupation = ?,
-               gender = ?${req.file ? ", profilePicture=?" : ""}
+               gender = ?,
+               verified = ?
+               ${req.file ? ", profilePicture=?" : ""}
            WHERE id = ?`;
 
     const userDataValues = [...Object.values(userData)];
@@ -93,7 +98,7 @@ export const updateProfile = async (req, res) => {
 
     await db.promise().query(sql, userDataValues);
 
-    const sql2 = `SELECT title,id,clubName,clubId,firstName,lastName,profilePicture,verified FROM users WHERE id=?`;
+    const sql2 = `SELECT title,id,clubName,clubId,firstName,lastName,profilePicture,verified,regionName,zoneName FROM users WHERE id=?`;
     const [rows] = await db.promise().query(sql2, [id]);
     const token = jwt.sign(
       {
@@ -104,6 +109,10 @@ export const updateProfile = async (req, res) => {
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
         picture: rows[0].profilePicture,
+        regionName: rows[0].regionName,
+        zoneName: rows[0].zoneName,
+        email:rows[0].email,
+        phone:rows[0].phone,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,
@@ -118,5 +127,20 @@ export const updateProfile = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const clubMembers = async (req, res) => {
+  const clubId = req.clubId;
+  try {
+    const sql =
+      "SELECT title,firstName,lastName,clubName,dob FROM users WHERE clubId=?";
+    const data = await db.promise().query(sql, [clubId]);
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error While Fetching club Members" });
   }
 };

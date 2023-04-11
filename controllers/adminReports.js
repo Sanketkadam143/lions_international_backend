@@ -22,9 +22,13 @@ export const getPoints = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ message: "Club not found" });
     }
+
+    const sql2="SELECT COUNT(*) as newsCount FROM news WHERE clubId = ?";
+    const [[{newsCount}]] = await db.promise().query(sql2,[clubId]);
     return res.status(200).json({
       adminstars: rows[0].adminstars,
       activityStar: rows[0].activityStar,
+      newsCount,
     });
   } catch (error) {
     console.error(error);

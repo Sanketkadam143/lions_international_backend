@@ -31,11 +31,13 @@ function createConnection() {
         } else {
           console.log("Successfully connected to the database.");
           resolve(connection);
+          setInterval(() => {
+            connection.ping();
+          }, 30000); // send ping query every 30 seconds to keep the connection alive
         }
       });
     }
   });
 }
-
 
 export default createConnection;
