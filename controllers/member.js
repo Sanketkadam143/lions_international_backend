@@ -42,6 +42,7 @@ export const updateProfile = async (req, res) => {
   } = req.body;
   const clubId = req.clubId;
   const id = req.userId;
+  const verified=1;
   let imagePath;
 
   try {
@@ -67,6 +68,7 @@ export const updateProfile = async (req, res) => {
       dob,
       occupation,
       gender,
+      verified,
     };
 
     const sql = `UPDATE users 
@@ -83,7 +85,9 @@ export const updateProfile = async (req, res) => {
                spouseName = ?,
                dob = ?,
                occupation = ?,
-               gender = ?${req.file ? ", profilePicture=?" : ""}
+               gender = ?,
+               verified = ?
+               ${req.file ? ", profilePicture=?" : ""}
            WHERE id = ?`;
 
     const userDataValues = [...Object.values(userData)];
@@ -107,6 +111,8 @@ export const updateProfile = async (req, res) => {
         picture: rows[0].profilePicture,
         regionName: rows[0].regionName,
         zoneName: rows[0].zoneName,
+        email:rows[0].email,
+        phone:rows[0].phone,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,

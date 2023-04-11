@@ -37,6 +37,8 @@ export const signIn = async (req, res) => {
         picture:rows[0].profilePicture,
         regionName:rows[0].regionName,
         zoneName:rows[0].zoneName,
+        email:rows[0].email,
+        phone:rows[0].phone,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,
