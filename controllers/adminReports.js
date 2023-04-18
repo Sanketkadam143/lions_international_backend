@@ -86,3 +86,20 @@ export const addReport = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const topClubsByAdmin = async (req, res) => {
+
+  try {
+    const sql = "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 15";
+    const [topClubs] = await db.promise().query(sql);
+    if (topClubs.length === 0) {
+      return res.status(404).json({ message: "Clubs not found" });
+    }
+
+    return res.status(200).json( topClubs );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
