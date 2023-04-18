@@ -49,3 +49,16 @@ export const newsReporting = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const topNews = async (req, res) => {
+  try {
+    const sql = "SELECT * FROM news WHERE verified=1 ORDER BY date DESC LIMIT 10";
+    const data = await db.promise().query(sql);
+
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+

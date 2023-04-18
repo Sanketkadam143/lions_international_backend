@@ -117,16 +117,56 @@ export const addActivity = async (req, res) => {
       placeHolder,
       clubId,
       activityStars,
-      image_path
+      image_path,
     });
 
-    return res
-      .status(200)
-      .json({
-        successMessage: `Activity submitted,You earned ${activityStars} stars !!`,
-      });
+    return res.status(200).json({
+      successMessage: `Activity submitted,You earned ${activityStars} stars !!`,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const getActivityStats = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        (SELECT COUNT(*) FROM activities) AS totalActivities, 
+        (SELECT SUM(amount) FROM activities) AS totalAmountSpend, 
+        (SELECT SUM(placeholder) FROM activities) AS beneficiariesServed, 
+        (SELECT COUNT(DISTINCT clubId) FROM users) AS totalClubs, 
+        (SELECT SUM(amount) FROM expenses WHERE type = 'deposite') AS amountRaised
+    `;
+    const [[data]] = await db.promise().query(sql);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch activity Stats" });
+  }
+};
+
+export const events = async (req, res) => {
+  try {
+    const upcomingSql = `
+      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      WHERE date >= CURRENT_DATE() 
+      ORDER BY date ASC 
+      LIMIT 5
+    `;
+    const pastSql = `
+      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      WHERE date < CURRENT_DATE() 
+      ORDER BY date DESC 
+      LIMIT 5
+    `;
+    const [upcomingData] = await db.promise().query(upcomingSql);
+    const [pastData] = await db.promise().query(pastSql);
+    return res.status(200).json({ upcoming: upcomingData, past: pastData });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch events" });
+  }
+};
+
