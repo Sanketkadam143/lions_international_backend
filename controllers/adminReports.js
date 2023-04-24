@@ -90,7 +90,7 @@ export const addReport = async (req, res) => {
 export const topClubsByAdmin = async (req, res) => {
 
   try {
-    const sql = "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 15";
+    const sql = "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 16";
     const [topClubs] = await db.promise().query(sql);
     if (topClubs.length === 0) {
       return res.status(404).json({ message: "Clubs not found" });
