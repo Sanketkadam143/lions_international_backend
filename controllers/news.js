@@ -52,13 +52,24 @@ export const newsReporting = async (req, res) => {
 
 export const topNews = async (req, res) => {
   try {
-    const sql = "SELECT * FROM news WHERE verified=1 ORDER BY date DESC LIMIT 10";
+    const page = req.query.page || 1;
+    const rowsPerPage = 10;
+    const offset = (page - 1) * rowsPerPage;
+
+    const countSql = "SELECT COUNT(*) as count FROM news WHERE verified=1";
+    const countData = await db.promise().query(countSql);
+    const totalCount = countData[0][0].count;
+
+    const sql = `SELECT newsId,newsTitle ,description ,image,date FROM news WHERE verified=1 ORDER BY date DESC LIMIT ${rowsPerPage} OFFSET ${offset}`;
     const data = await db.promise().query(sql);
 
-    return res.status(200).json(data[0]);
+    return res.status(200).json({
+      data: data[0],
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / rowsPerPage),
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
