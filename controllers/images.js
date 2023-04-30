@@ -10,7 +10,6 @@ export const getImages = async (req, res) => {
     if (!fs.existsSync(imagePath)) {
       throw new Error();
     }
-
     return res.sendFile(imagePath);
   } catch (error) {
 
