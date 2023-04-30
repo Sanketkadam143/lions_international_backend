@@ -56,16 +56,18 @@ export const topNews = async (req, res) => {
     const rowsPerPage = 10;
     const offset = (page - 1) * rowsPerPage;
 
-    const countSql = "SELECT COUNT(*) as count FROM news WHERE verified=1";
+    // change verfied to 1 when testing is done
+    const countSql = "SELECT COUNT(*) as count FROM news WHERE verified=0";
     const countData = await db.promise().query(countSql);
     const totalCount = countData[0][0].count;
 
-    const sql = `SELECT newsId,newsTitle ,description ,image,date FROM news WHERE verified=1 ORDER BY date DESC LIMIT ${rowsPerPage} OFFSET ${offset}`;
+    // change verfied to 1 when testing is done
+    const sql = `SELECT newsId,newsTitle ,description ,image,date FROM news WHERE verified=0 ORDER BY date DESC LIMIT ${rowsPerPage} OFFSET ${offset}`;
     const data = await db.promise().query(sql);
 
     return res.status(200).json({
       data: data[0],
-      currentPage: page,
+      currentPage: parseInt(page),
       totalPages: Math.ceil(totalCount / rowsPerPage),
     });
   } catch (error) {
