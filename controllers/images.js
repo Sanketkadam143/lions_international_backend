@@ -12,6 +12,7 @@ export const getImages = async (req, res) => {
     }
     return res.sendFile(imagePath);
   } catch (error) {
+
     return res.status(404).json("Image not found");
   }
 };

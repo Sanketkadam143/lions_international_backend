@@ -169,4 +169,28 @@ export const events = async (req, res) => {
     return res.status(500).json({ message: "Unable to fetch events" });
   }
 };
+export const registerActivity = async (req, res) => {
+  const { memberId, name, contact, activityId } = req.body;
+ 
+  const FullName = name;
 
+  try {
+
+    if(memberId){
+      const sql2 = "SELECT * FROM users where id=?";
+      const [rows]=await db.promise().query(sql2,memberId);
+      if(rows.length===0){
+        return res.status(404).json({message:"Invalid Member Id"})
+      }
+    }
+    const sql =
+        "INSERT INTO register (memberId,FullName,contact,activityId) VALUES (?, ?, ?, ?)";
+      await db.promise().query(sql, [memberId, FullName, contact, activityId]);
+      return res.status(200).json({
+        successMessage: "Registered successfully",
+      });
+  } 
+  catch (error) {
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
