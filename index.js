@@ -15,7 +15,7 @@ import assets from './routes/assets.js';
 import adminauth from './routes/superadmin/login.js';
 import adminActivity from './routes/superadmin/activity.js';
 import regionData from './routes/superadmin/regionData.js';
-
+import adminAssets from './routes/superadmin/assets.js';
 dotenv.config();
 const app = express();
 const db = await connection();
@@ -47,6 +47,7 @@ app.use("/admin/auth",adminauth);
 app.use("/admin/activity",adminActivity);
 app.use("/admin/regiondata",regionData)
 app.use("/admin/images",images);
+app.use("/admin/assets",adminAssets);
 
 
 app.listen(PORT, () =>
