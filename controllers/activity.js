@@ -146,7 +146,6 @@ export const getActivityStats = async (req, res) => {
     return res.status(500).json({ message: "Unable to fetch activity Stats" });
   }
 };
-
 export const events = async (req, res) => {
   try {
     const upcomingSql = `
@@ -161,14 +160,22 @@ export const events = async (req, res) => {
       ORDER BY date DESC 
       LIMIT 5
     `;
+    const recentSql = `
+      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      ORDER BY date DESC 
+      LIMIT 10
+    `;
     const [upcomingData] = await db.promise().query(upcomingSql);
     const [pastData] = await db.promise().query(pastSql);
-    return res.status(200).json({ upcoming: upcomingData, past: pastData });
+    const [recentData] = await db.promise().query(recentSql);
+    return res.status(200).json({ upcoming: upcomingData, past: pastData, recent: recentData });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Unable to fetch events" });
   }
 };
+
+
 export const registerActivity = async (req, res) => {
   const { memberId, name, contact, activityId } = req.body;
  

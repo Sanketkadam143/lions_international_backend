@@ -144,3 +144,46 @@ export const clubMembers = async (req, res) => {
       .json({ message: "Error While Fetching club Members" });
   }
 };
+
+// export const MemberDirectory=async(req,res)=>{
+//   const clubId = req.clubId;
+//     const page = req.query.page || 1;
+//     const offset = (page - 1) * 100;
+//   try{
+//     let sql = ` SELECT title, CONCAT(firstName, middleName, lastName) AS fullName, clubName, Occupation
+//       FROM users
+//       LIMIT 1000
+//       OFFSET ${offset} `;
+//     if (clubId) {
+//       sql = `
+//         SELECT title, CONCAT(firstName, middleName, lastName) AS fullName, clubName, Occupation
+//         FROM users
+//         WHERE clubId = ${clubId}
+//         LIMIT 1000
+//         OFFSET ${offset}
+//       `;
+//     }
+//     const data = await db.promise().query(sql);
+//     return res.status(200).json(data[0]);
+//   }
+//   catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error While Fetching club Members" });
+//   }
+// }
+export const MemberDirectory = async (req, res) => {
+  try {
+    const sql = `
+      SELECT CONCAT(firstName, middleName, lastName) AS fullName, title, phone, clubName, profilePicture
+      FROM users Limit 20;
+    `;
+    const data = await db.promise().query(sql);
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Error While Fetching Business Members" });
+  }
+}
+
