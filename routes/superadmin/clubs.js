@@ -1,10 +1,9 @@
-import express from "express";
-import { clubs } from "../../controllers/superadmin/clubs.js";
-// import superAuth from "../../middleware/superAdmin.js";
-const  router=express.Router();
+import express from 'express';
+import { addClub ,getClub,deleteClub} from '../../controllers/superadmin/clubs.js';
 
-router.post('/clubs',clubs);
+const router = express.Router();
 
-
-
+router.post('/addClubs', addClub);
+router.get('/getClubs',getClub);
+router.delete("/deleteClub",deleteClub);
 export default router;
