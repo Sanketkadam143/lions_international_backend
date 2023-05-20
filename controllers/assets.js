@@ -38,14 +38,13 @@ export const galleryImages = async (req, res) => {
 export const addGallery = async (req, res) => {
  
     const { title, description } = req.body;
-    const clubId = req.clubId;
     try {
       const imagePath = `/images/gallery/${req.file.originalname}`;
       const folder = path.resolve(__dirname, "..") + imagePath;
       await sharp(req.file.buffer).png().toFile(folder);
   
-      const sql1 = `INSERT INTO gallery(clubId,image,title,description) VALUES(?,?,?,?)`;
-      await db.promise().query(sql1, [clubId, imagePath, title, description]);
+      const sql1 = `INSERT INTO gallery(image,title,description) VALUES(?,?,?)`;
+      await db.promise().query(sql1, [ imagePath, title, description]);
       return res
         .status(200)
         .json({ successMessage: "Images Added Successfully" });
