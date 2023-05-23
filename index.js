@@ -17,6 +17,8 @@ import adminActivity from './routes/superadmin/activity.js';
 import regionData from './routes/superadmin/regionData.js';
 import adminAssets from './routes/superadmin/assets.js';
 import adminClubs from './routes/superadmin/clubs.js';
+import adminMembers from './routes/superadmin/members.js';
+import adminContacts from './routes/superadmin/contact.js';
 dotenv.config();
 const app = express();
 const db = await connection();
@@ -50,7 +52,8 @@ app.use("/admin/regiondata",regionData)
 app.use("/admin/images",images);
 app.use("/admin/assets",adminAssets);
 app.use("/admin/clubs",adminClubs);
-
+app.use("/admin/members",adminMembers);
+app.use("/admin/contact",adminContacts);
 app.listen(PORT, () =>
   console.log(`Server Running on Port: http://localhost:${PORT}`)
 );
