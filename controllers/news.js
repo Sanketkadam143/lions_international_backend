@@ -3,7 +3,7 @@ import sharp from "sharp";
 import path from "path";
 const db = await connection();
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1'));
 
 export const reportedNews = async (req, res) => {
   const clubId = req.clubId;
