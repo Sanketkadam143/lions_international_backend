@@ -110,7 +110,7 @@ export const downloadMemberData = async (req, res) => {
 export const getDistrictData = async (req, res) => {
   try {
     const sql = `
-      SELECT regionName, zoneName, clubName, clubId FROM users
+      SELECT CONCAT(firstname,middlename,lastname) AS name,regionName, zoneName, clubName, clubId FROM users
       ORDER BY regionName, zoneName, clubName
     `;
     const [data] = await db.promise().query(sql);
