@@ -71,3 +71,15 @@ export const addGallery = async (req, res) => {
       return res.status(500).json({ message: "Something went wrong" });
     }
   };
+  export const getResourcesByCategory = async (req, res) => {
+   
+  const {id,title,path,category}=req.body;
+    try {
+      const sql = `SELECT id,title,path,category FROM resources`;
+      const data = await db.promise().query(sql,{id,title,path,category});
+      return res.status(200).json(data[0]);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong" });
+    }
+  };
