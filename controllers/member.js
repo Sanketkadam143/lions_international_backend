@@ -8,7 +8,7 @@ dotenv.config();
 const JWTKEY = process.env.JWTKEY;
 const JWT_EXPIRE = process.env.JWT_EXPIRE;
 const db = await connection();
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1'));
 
 export const memberProfile = async (req, res) => {
   const id = req.userId;
