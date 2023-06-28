@@ -44,12 +44,12 @@ app.use("/api/expenses",expense);
 app.use("/api/assets",assets);
 
 // superadmin routes
-app.use("/admin/auth",adminauth);
-app.use("/admin/activity",adminActivity);
-app.use("/admin/regiondata",regionData)
-app.use("/admin/images",images);
-app.use("/admin/assets",adminAssets);
-app.use("/admin/clubs",adminClubs);
+app.use("/api/admin/auth",adminauth);
+app.use("/api/admin/activity",adminActivity);
+app.use("/api/admin/regiondata",regionData)
+app.use("/api/admin/images",images);
+app.use("/api/admin/assets",adminAssets);
+app.use("/api/admin/clubs",adminClubs);
 
 app.listen(PORT, () =>
   console.log(`Server Running on Port: http://localhost:${PORT}`)
