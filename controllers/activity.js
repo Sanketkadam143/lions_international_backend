@@ -56,13 +56,21 @@ export const getReportedActivity = async (req, res) => {
   const clubId = req.clubId;
   try {
     const sql = `SELECT * FROM activities WHERE clubId=?`;
-    const [data] = await db.promise().query(sql, [clubId]);
-    return res.status(200).json(data);
+    const [activities] = await db.promise().query(sql, [clubId]);
+    
+    for (const activity of activities) {
+      const registerSql = `SELECT * FROM register WHERE activityId=?`;
+      const [registrations] = await db.promise().query(registerSql, [activity.activityId]);
+      activity.registrations = registrations;
+    }
+
+    return res.status(200).json(activities);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 
 export const addActivity = async (req, res) => {
   const {
@@ -149,19 +157,19 @@ export const getActivityStats = async (req, res) => {
 export const events = async (req, res) => {
   try {
     const upcomingSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
       WHERE date >= CURRENT_DATE() 
       ORDER BY date ASC 
       LIMIT 5
     `;
     const pastSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
       WHERE date < CURRENT_DATE() 
       ORDER BY date DESC 
       LIMIT 5
     `;
     const recentSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId FROM activities 
+      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
       ORDER BY date DESC 
       LIMIT 10
     `;
