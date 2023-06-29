@@ -117,14 +117,25 @@ export const getDistrictData = async (req, res) => {
     const districtData = [];
 
     for (const row of data) {
+      if(row.regionName===""){
+        continue;
+      }
       const region = districtData.find(
         (region) => region.name === row.regionName
       );
 
       if (!region) {
+        let region_chairPerson="";
+        if(row.regionName.toLowerCase()!=="unassigned"){
+          const sql1 = `SELECT firstname,middlename,lastname FROM users WHERE regionName = ? AND title LIKE '%Region Chairperson%'`;
+          const [data] = await db.promise().query(sql1,[row.regionName]);
+          if(data.length!==0){
+            region_chairPerson = data[0].firstname+" "+data[0].middlename + " "+ data[0].lastname
+          }     
+        }  
         districtData.push({
           name: row.regionName,
-          chairPerson: "",
+          region_chairPerson:region_chairPerson,
           zones: [],
         });
       }
@@ -134,11 +145,20 @@ export const getDistrictData = async (req, res) => {
         .zones.find((zone) => zone.name === row.zoneName);
 
       if (!zone) {
+        let zone_chairPerson="";
+        if(row.zoneName.toLowerCase()!=="unassigned" && row.zoneName.includes("Zone")){
+          const sql1 = `SELECT firstname, middlename, lastname FROM users WHERE zoneName = ? AND regionName = ? AND title LIKE '%Zone Chairperson%'`;
+          const [data] = await db.promise().query(sql1, [row.zoneName, row.regionName]);         
+          if(data.length!==0){
+            zone_chairPerson = data[0].firstname+" "+data[0].middlename + " "+ data[0].lastname
+          } 
+         
+        } 
         districtData
           .find((region) => region.name === row.regionName)
           .zones.push({
             name: row.zoneName,
-            chairPerson: "",
+            zone_chairPerson:zone_chairPerson,
             clubs: [],
           });
       }

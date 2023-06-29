@@ -19,6 +19,7 @@ import adminAssets from './routes/superadmin/assets.js';
 import adminClubs from './routes/superadmin/clubs.js';
 import adminMembers from './routes/superadmin/members.js';
 import adminContacts from './routes/superadmin/contact.js';
+import frontend_assets from './routes/frontend_assets.js';
 dotenv.config();
 const app = express();
 const db = await connection();
@@ -44,16 +45,17 @@ app.use("/api/images",images);
 app.use("/api/clubs",clubs);
 app.use("/api/expenses",expense);
 app.use("/api/assets",assets);
+app.use("/api/static",frontend_assets)
 
 // superadmin routes
-app.use("/admin/auth",adminauth);
-app.use("/admin/activity",adminActivity);
-app.use("/admin/regiondata",regionData)
-app.use("/admin/images",images);
-app.use("/admin/assets",adminAssets);
-app.use("/admin/clubs",adminClubs);
-app.use("/admin/members",adminMembers);
-app.use("/admin/contact",adminContacts);
+app.use("/api/admin/auth",adminauth);
+app.use("/api/admin/activity",adminActivity);
+app.use("/api/admin/regiondata",regionData)
+app.use("/api/admin/images",images);
+app.use("/api/admin/assets",adminAssets);
+app.use("/api/admin/clubs",adminClubs);
+app.use("/api/admin/members",adminMembers);
+app.use("/api/admin/contact",adminContacts);
 
 app.listen(PORT, () =>
   console.log(`Server Running on Port: http://localhost:${PORT}`)
