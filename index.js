@@ -1,4 +1,5 @@
 import express from "express";
+import session from "express-session";
 import cors from "cors";
 import bodyParser from "body-parser";
 import connection from "./config/dbconnection.js";
@@ -31,6 +32,12 @@ app.use(
     origin: "*",
   })
 );
+
+// app.use(session({
+//   secret: process.env.SESSION_KEY,
+//   resave: false,
+//   saveUninitialized: false
+// }));
 
 
 app.use(bodyParser.json({ limit: "30mb", extended: true }));

@@ -98,7 +98,7 @@ export const updateProfile = async (req, res) => {
 
     await db.promise().query(sql, userDataValues);
 
-    const sql2 = `SELECT title,id,clubName,clubId,firstName,lastName,profilePicture,verified,regionName,zoneName FROM users WHERE id=?`;
+    const sql2 = `SELECT title,id,clubName,clubId,firstName,lastName,profilePicture,verified,regionName,zoneName,email,phone FROM users WHERE id=?`;
     const [rows] = await db.promise().query(sql2, [id]);
     const token = jwt.sign(
       {
@@ -175,15 +175,49 @@ export const clubMembers = async (req, res) => {
 // }
 export const MemberDirectory = async (req, res) => {
   try {
+    const page = req.query.page || 1;
+    const search = req.query.search || "";
+    const rowsPerPage = 9;
+    const offset = (page - 1) * rowsPerPage;
+
+    let whereClause = ""; // Initialize the where clause
+
+    // Add search condition if search query is provided
+    if (search !== "") {
+      whereClause = `
+        WHERE CONCAT(firstName,' ', middleName,' ' ,lastName) LIKE '%${search}%'
+      `;
+    }
+
     const sql = `
-      SELECT CONCAT(firstName, middleName, lastName) AS fullName, title, phone, clubName, profilePicture
-      FROM users Limit 20;
+      SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture
+      FROM users
+      ${whereClause}
+      LIMIT ${rowsPerPage} OFFSET ${offset};
     `;
     const data = await db.promise().query(sql);
-    return res.status(200).json(data[0]);
+
+    let countSql = "SELECT COUNT(*) as count FROM users";
+    // Add where clause to count query if search query is provided
+    if (search !== "") {
+      countSql += ` ${whereClause}`;
+    }
+    const countData = await db.promise().query(countSql);
+    const totalCount = countData[0][0].count;
+
+    const totalPages = Math.ceil(totalCount / rowsPerPage);
+
+    return res.status(200).json({
+      data: data[0],
+      currentPage: parseInt(page),
+      totalPages: totalPages,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Error While Fetching Business Members" });
   }
-}
+};
+
+
+
 
