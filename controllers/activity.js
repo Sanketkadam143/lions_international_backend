@@ -156,32 +156,63 @@ export const getActivityStats = async (req, res) => {
 };
 export const events = async (req, res) => {
   try {
+    const { page = 1, limit = 5 } = req.query;
+    const offset = (page - 1) * limit;
+
     const upcomingSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
+      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType
+      FROM activities 
       WHERE date >= CURRENT_DATE() 
       ORDER BY date ASC 
-      LIMIT 5
+      LIMIT ${limit} OFFSET ${offset}
     `;
     const pastSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
+      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType
+      FROM activities 
       WHERE date < CURRENT_DATE() 
       ORDER BY date DESC 
-      LIMIT 5
+      LIMIT ${limit} OFFSET ${offset}
     `;
-    const recentSql = `
-      SELECT activityId,activityTitle,date,description,image_path,clubId,place,activityCategory,activityType FROM activities 
-      ORDER BY date DESC 
-      LIMIT 10
-    `;
+
     const [upcomingData] = await db.promise().query(upcomingSql);
     const [pastData] = await db.promise().query(pastSql);
-    const [recentData] = await db.promise().query(recentSql);
-    return res.status(200).json({ upcoming: upcomingData, past: pastData, recent: recentData });
+
+    // Get the count of past events and upcoming events
+    const pastCountSql = `
+      SELECT COUNT(*) AS pastCount
+      FROM activities 
+      WHERE date < CURRENT_DATE()
+    `;
+    const [pastCountData] = await db.promise().query(pastCountSql);
+    const pastCount = pastCountData[0].pastCount;
+
+    const upcomingCountSql = `
+      SELECT COUNT(*) AS upcomingCount
+      FROM activities 
+      WHERE date >= CURRENT_DATE()
+    `;
+    const [upcomingCountData] = await db.promise().query(upcomingCountSql);
+    const upcomingCount = upcomingCountData[0].upcomingCount;
+
+    const totalCount = pastCount > upcomingCount ? pastCount : upcomingCount;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return res.status(200).json({ 
+      upcoming: upcomingData, 
+      past: pastData, 
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: totalPages,
+        totalCount: totalCount
+      }
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Unable to fetch events" });
   }
 };
+
 
 
 export const registerActivity = async (req, res) => {
