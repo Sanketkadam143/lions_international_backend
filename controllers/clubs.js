@@ -89,15 +89,20 @@ export const downloadMemberData = async (req, res) => {
     if (clubs.length === 0) {
       return res.status(400).json({ message: "Please Select Club" });
     }
-    if (titles.length === 0) {
-      return res.status(400).json({ message: "Please Select Titles" });
-    }
-    const sql = `
+    // if (titles.length === 0) {
+    //   return res.status(400).json({ message: "Please Select Titles" });
+    // }
+    let sql = `
       SELECT clubName,firstName,lastName,occupation,phone,regionName,zoneName,title FROM users 
-      WHERE clubName IN (SELECT clubName FROM clubs WHERE clubId IN (?)) 
-      AND title IN (?)
+      WHERE clubName IN (SELECT clubName FROM clubs WHERE clubId IN (?))
     `;
-    const [payload] = await db.promise().query(sql, [clubIds, selectedTitles]);
+    let payload;
+    if (titles.length === 0) {
+      [payload] = await db.promise().query(sql, [clubIds]);
+    } else {
+      sql += `AND title IN (?)`;
+      [payload] = await db.promise().query(sql, [clubIds, selectedTitles]);
+    }
     return res
       .status(200)
       .json({ payload, successMessage: "Data Fetched Successfully" });
@@ -117,7 +122,7 @@ export const getDistrictData = async (req, res) => {
     const districtData = [];
 
     for (const row of data) {
-      if(row.regionName===""){
+      if (row.regionName === "") {
         continue;
       }
       const region = districtData.find(
@@ -125,17 +130,22 @@ export const getDistrictData = async (req, res) => {
       );
 
       if (!region) {
-        let region_chairPerson="";
-        if(row.regionName.toLowerCase()!=="unassigned"){
+        let region_chairPerson = "";
+        if (row.regionName.toLowerCase() !== "unassigned") {
           const sql1 = `SELECT firstname,middlename,lastname FROM users WHERE regionName = ? AND title LIKE '%Region Chairperson%'`;
-          const [data] = await db.promise().query(sql1,[row.regionName]);
-          if(data.length!==0){
-            region_chairPerson = data[0].firstname+" "+data[0].middlename + " "+ data[0].lastname
-          }     
-        }  
+          const [data] = await db.promise().query(sql1, [row.regionName]);
+          if (data.length !== 0) {
+            region_chairPerson =
+              data[0].firstname +
+              " " +
+              data[0].middlename +
+              " " +
+              data[0].lastname;
+          }
+        }
         districtData.push({
           name: row.regionName,
-          region_chairPerson:region_chairPerson,
+          region_chairPerson: region_chairPerson,
           zones: [],
         });
       }
@@ -145,20 +155,29 @@ export const getDistrictData = async (req, res) => {
         .zones.find((zone) => zone.name === row.zoneName);
 
       if (!zone) {
-        let zone_chairPerson="";
-        if(row.zoneName.toLowerCase()!=="unassigned" && row.zoneName.includes("Zone")){
+        let zone_chairPerson = "";
+        if (
+          row.zoneName.toLowerCase() !== "unassigned" &&
+          row.zoneName.includes("Zone")
+        ) {
           const sql1 = `SELECT firstname, middlename, lastname FROM users WHERE zoneName = ? AND regionName = ? AND title LIKE '%Zone Chairperson%'`;
-          const [data] = await db.promise().query(sql1, [row.zoneName, row.regionName]);         
-          if(data.length!==0){
-            zone_chairPerson = data[0].firstname+" "+data[0].middlename + " "+ data[0].lastname
-          } 
-         
-        } 
+          const [data] = await db
+            .promise()
+            .query(sql1, [row.zoneName, row.regionName]);
+          if (data.length !== 0) {
+            zone_chairPerson =
+              data[0].firstname +
+              " " +
+              data[0].middlename +
+              " " +
+              data[0].lastname;
+          }
+        }
         districtData
           .find((region) => region.name === row.regionName)
           .zones.push({
             name: row.zoneName,
-            zone_chairPerson:zone_chairPerson,
+            zone_chairPerson: zone_chairPerson,
             clubs: [],
           });
       }
