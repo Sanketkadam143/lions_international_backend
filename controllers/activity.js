@@ -5,6 +5,18 @@ const db = await connection();
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1'));
 
+export const getClubDirector = async (req, res) => {
+  try {
+    const  clubId = req.clubId;
+    const sql = "SELECT CONCAT(firstName, ' ', lastName) AS fullName FROM users WHERE title LIKE '%Club Director%' AND clubId = ?";
+    const data = await db.promise().query(sql,[clubId]);
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export const getActivity = async (req, res) => {
   try {
     const sql = "SELECT distinct type FROM activitytype";
@@ -101,7 +113,13 @@ export const addActivity = async (req, res) => {
         activityCategory,
       ]);
     const star = rows[0].star;
-    const activityStars = star * (placeHolderValue || 1);
+    let activityStars = star * (placeHolderValue || 1);
+   
+    // custom change in activity points for lions bangalore
+    if(process.env.DOMAIN_URL.includes("lionsdistrict317f.org")){
+      activityStars=1;
+    }
+
     const placeHolder = placeHolderValue;
     await db
       .promise()
@@ -160,14 +178,14 @@ export const events = async (req, res) => {
     const offset = (page - 1) * limit;
 
     const upcomingSql = `
-      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType
+      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType, cabinetOfficers
       FROM activities 
       WHERE date >= CURRENT_DATE() 
       ORDER BY date ASC 
       LIMIT ${limit} OFFSET ${offset}
     `;
     const pastSql = `
-      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType
+      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType, cabinetOfficers
       FROM activities 
       WHERE date < CURRENT_DATE() 
       ORDER BY date DESC 
