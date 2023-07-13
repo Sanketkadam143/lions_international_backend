@@ -145,6 +145,21 @@ export const clubMembers = async (req, res) => {
   }
 };
 
+export const allmembers = async (req, res) => {
+  const clubId = req.query.clubid;
+  try {
+    const sql =
+      "SELECT title,firstName,lastName,clubName,dob ,phone,occupation FROM users WHERE clubId=?";
+    const data = await db.promise().query(sql, [clubId]);
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error While Fetching club Members" });
+  }
+};
+
 // export const MemberDirectory=async(req,res)=>{
 //   const clubId = req.clubId;
 //     const page = req.query.page || 1;

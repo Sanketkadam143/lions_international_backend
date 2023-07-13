@@ -147,7 +147,7 @@ export const addActivity = async (req, res) => {
     });
 
     return res.status(200).json({
-      successMessage: `Activity submitted,You earned ${activityStars} stars !!`,
+      successMessage: `Activity submitted,You earned ${activityStars} point!!`,
     });
   } catch (error) {
     console.log(error);

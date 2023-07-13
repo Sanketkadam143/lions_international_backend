@@ -4,6 +4,7 @@ import {
   memberProfile,
   clubMembers,
   MemberDirectory,
+  allmembers
 
 } from "../controllers/member.js";
 import auth from "../middleware/auth.js";
@@ -19,6 +20,7 @@ router.post(
 );
 router.get("/profile", auth, memberProfile);
 router.get("/clubmembers", auth, clubMembers);
+router.get("/allmembers",allmembers)
 router.get("/memberDirectory",auth,MemberDirectory);
 // router.get("/buisnessDirectory",BusinessDirectory);
 export default router;
