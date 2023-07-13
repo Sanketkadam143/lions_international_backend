@@ -21,7 +21,7 @@ export const addClub = async (req, res) => {
 
 export const getClub = async (req, res) => {
   const { clubId, clubName, adminstars, lastupdated } = req.body;
-
+  
   try {
     const sql = "SELECT clubId, clubName, adminstars,lastupdated FROM clubs";
     const params = [clubId, clubName, adminstars, lastupdated];
