@@ -116,7 +116,7 @@ export const addActivity = async (req, res) => {
     let activityStars = star * (placeHolderValue || 1);
    
     // custom change in activity points for lions bangalore
-    if(process.env.DOMAIN_URL.includes("lionsdistrict317f.org")){
+    if(process.env.DOMAIN_URL.includes("lionsdistrict317f.org") || process.env.DOMAIN_URL.includes("lions317f.org") ){
       activityStars=1;
     }
 
@@ -174,7 +174,7 @@ export const getActivityStats = async (req, res) => {
 };
 export const events = async (req, res) => {
   try {
-    const { page = 1, limit = 5 } = req.query;
+    const { page = 1, limit = 9 } = req.query;
     const offset = (page - 1) * limit;
 
     const upcomingSql = `
