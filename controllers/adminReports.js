@@ -3,7 +3,9 @@ import { calculatePoints } from "../utils/calculatePoints.js";
 const db = await connection();
 
 export const getReports = async (req, res) => {
-  const { month } = req.query;
+  // const { month } = req.query;
+  // temporary change
+  const month=7;
   try {
     const sql = "SELECT * FROM adminreports WHERE month=?";
     const data = await db.promise().query(sql, [month]);
@@ -40,6 +42,7 @@ export const addReport = async (req, res) => {
   const clubId = req.clubId;
   const data = req.body;
   const month = data[0].month;
+
   try {
     const adminstars = calculatePoints(data);
 

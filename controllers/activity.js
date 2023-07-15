@@ -8,7 +8,7 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w
 export const getClubDirector = async (req, res) => {
   try {
     const  clubId = req.clubId;
-    const sql = "SELECT CONCAT(firstName, ' ', lastName) AS fullName FROM users WHERE title LIKE '%Club Director%' AND clubId = ?";
+    const sql = "SELECT name AS fullName FROM cabinet_officers";
     const data = await db.promise().query(sql,[clubId]);
     return res.status(200).json(data[0]);
   } catch (error) {
