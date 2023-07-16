@@ -77,7 +77,7 @@ export const addReport = async (req, res) => {
           );
       } catch (error) {
         console.error(error);
-        throw new Error("Failed to insert report data");
+        return res.status(400).json({message:"Something went wrong"})
       }
     });
 
@@ -100,6 +100,19 @@ export const topClubsByAdmin = async (req, res) => {
     }
 
     return res.status(200).json( topClubs );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const allClubsReporting = async (req, res) => {
+
+  try {
+    const sql = "SELECT * from clubs";
+    const [clubsreporting] = await db.promise().query(sql);
+ 
+    return res.status(200).json( clubsreporting );
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
