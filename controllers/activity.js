@@ -83,6 +83,24 @@ export const getReportedActivity = async (req, res) => {
   }
 };
 
+export const deleteActivity = async (req, res) => {
+  const { activityId } = req.query; 
+  try {
+    const sql = `DELETE FROM activities WHERE activityId = ?`;
+    const [result] = await db.promise().query(sql, [activityId]);
+
+    if (result.affectedRows === 1) {
+      return res.status(200).json({ successMessage: "Activity deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
 
 export const addActivity = async (req, res) => {
   const {
@@ -102,11 +120,18 @@ export const addActivity = async (req, res) => {
   } = req.body;
 
   const clubId = req.clubId;
-  try {
-    const image_path = `/images/activity/${req.file.originalname}`;
-    const folder = path.resolve(__dirname, "..") + image_path;
-    await sharp(req.file.buffer).png().toFile(folder);
 
+  try {
+    const image_path = `/images/activity/${req.files[0].originalname}`;
+    const folder = path.resolve(__dirname, "..") + image_path;
+    await sharp(req.files[0].buffer).png().toFile(folder);
+   
+   let image_path2="";
+    if(req.files?.[1]){
+      image_path2 = `/images/activity/${req.files[1].originalname}`;
+      const folder = path.resolve(__dirname, "..") + image_path2;
+      await sharp(req.files[1].buffer).png().toFile(folder);
+    }
     const [rows] = await db
       .promise()
       .query("SELECT star FROM activitytype WHERE category=?", [
@@ -144,6 +169,7 @@ export const addActivity = async (req, res) => {
       clubId,
       activityStars,
       image_path,
+      image_path2
     });
 
     return res.status(200).json({

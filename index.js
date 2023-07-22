@@ -63,6 +63,7 @@ app.use("/api/admin/assets",adminAssets);
 app.use("/api/admin/clubs",adminClubs);
 app.use("/api/admin/members",adminMembers);
 app.use("/api/admin/contact",adminContacts);
+app.use("/api/admin/adminreporting",adminReport)
 
 app.listen(PORT, () =>
   console.log(`Server Running on Port: http://localhost:${PORT}`)
