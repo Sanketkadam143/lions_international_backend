@@ -3,13 +3,15 @@ import sharp from "sharp";
 import path from "path";
 const db = await connection();
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1'));
+const __dirname = path.dirname(
+  new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")
+);
 
 export const getClubDirector = async (req, res) => {
   try {
-    const  clubId = req.clubId;
+    const clubId = req.clubId;
     const sql = "SELECT name AS fullName FROM cabinet_officers";
-    const data = await db.promise().query(sql,[clubId]);
+    const data = await db.promise().query(sql, [clubId]);
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -69,10 +71,12 @@ export const getReportedActivity = async (req, res) => {
   try {
     const sql = `SELECT * FROM activities WHERE clubId=?`;
     const [activities] = await db.promise().query(sql, [clubId]);
-    
+
     for (const activity of activities) {
       const registerSql = `SELECT * FROM register WHERE activityId=?`;
-      const [registrations] = await db.promise().query(registerSql, [activity.activityId]);
+      const [registrations] = await db
+        .promise()
+        .query(registerSql, [activity.activityId]);
       activity.registrations = registrations;
     }
 
@@ -84,13 +88,15 @@ export const getReportedActivity = async (req, res) => {
 };
 
 export const deleteActivity = async (req, res) => {
-  const { activityId } = req.query; 
+  const { activityId } = req.query;
   try {
     const sql = `DELETE FROM activities WHERE activityId = ?`;
     const [result] = await db.promise().query(sql, [activityId]);
 
     if (result.affectedRows === 1) {
-      return res.status(200).json({ successMessage: "Activity deleted successfully" });
+      return res
+        .status(200)
+        .json({ successMessage: "Activity deleted successfully" });
     } else {
       return res.status(404).json({ message: "Activity not found" });
     }
@@ -99,8 +105,6 @@ export const deleteActivity = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
-
 
 export const addActivity = async (req, res) => {
   const {
@@ -125,9 +129,9 @@ export const addActivity = async (req, res) => {
     const image_path = `/images/activity/${req.files[0].originalname}`;
     const folder = path.resolve(__dirname, "..") + image_path;
     await sharp(req.files[0].buffer).png().toFile(folder);
-   
-   let image_path2="";
-    if(req.files?.[1]){
+
+    let image_path2 = "";
+    if (req.files?.[1]) {
       image_path2 = `/images/activity/${req.files[1].originalname}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
       await sharp(req.files[1].buffer).png().toFile(folder);
@@ -139,10 +143,13 @@ export const addActivity = async (req, res) => {
       ]);
     const star = rows[0].star;
     let activityStars = star * (placeHolderValue || 1);
-   
+
     // custom change in activity points for lions bangalore
-    if(process.env.DOMAIN_URL.includes("lionsdistrict317f.org") || process.env.DOMAIN_URL.includes("lions317f.org") ){
-      activityStars=1;
+    if (
+      process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
+      process.env.DOMAIN_URL.includes("lions317f.org")
+    ) {
+      activityStars = 1;
     }
 
     const placeHolder = placeHolderValue;
@@ -152,7 +159,7 @@ export const addActivity = async (req, res) => {
         "UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;",
         [activityStars, clubId]
       );
-    await db.promise().query("INSERT INTO activities SET ?", {
+    const result = await db.promise().query("INSERT INTO activities SET ?", {
       amount,
       activityTitle,
       city,
@@ -169,11 +176,14 @@ export const addActivity = async (req, res) => {
       clubId,
       activityStars,
       image_path,
-      image_path2
+      image_path2,
     });
 
+
+    const activityId = result[0]?.insertId;
+
     return res.status(200).json({
-      successMessage: `Activity submitted,You earned ${activityStars} point!!`,
+      successMessage: `Activity submitted,You earned ${activityStars} point!! Activity Id is ${activityId}`,
     });
   } catch (error) {
     console.log(error);
@@ -241,15 +251,15 @@ export const events = async (req, res) => {
     const totalCount = pastCount > upcomingCount ? pastCount : upcomingCount;
     const totalPages = Math.ceil(totalCount / limit);
 
-    return res.status(200).json({ 
-      upcoming: upcomingData, 
-      past: pastData, 
+    return res.status(200).json({
+      upcoming: upcomingData,
+      past: pastData,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         totalPages: totalPages,
-        totalCount: totalCount
-      }
+        totalCount: totalCount,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -257,30 +267,26 @@ export const events = async (req, res) => {
   }
 };
 
-
-
 export const registerActivity = async (req, res) => {
   const { memberId, name, contact, activityId } = req.body;
- 
+
   const FullName = name;
 
   try {
-
-    if(memberId){
+    if (memberId) {
       const sql2 = "SELECT * FROM users where id=?";
-      const [rows]=await db.promise().query(sql2,memberId);
-      if(rows.length===0){
-        return res.status(404).json({message:"Invalid Member Id"})
+      const [rows] = await db.promise().query(sql2, memberId);
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "Invalid Member Id" });
       }
     }
     const sql =
-        "INSERT INTO register (memberId,FullName,contact,activityId) VALUES (?, ?, ?, ?)";
-      await db.promise().query(sql, [memberId, FullName, contact, activityId]);
-      return res.status(200).json({
-        successMessage: "Registered successfully",
-      });
-  } 
-  catch (error) {
+      "INSERT INTO register (memberId,FullName,contact,activityId) VALUES (?, ?, ?, ?)";
+    await db.promise().query(sql, [memberId, FullName, contact, activityId]);
+    return res.status(200).json({
+      successMessage: "Registered successfully",
+    });
+  } catch (error) {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

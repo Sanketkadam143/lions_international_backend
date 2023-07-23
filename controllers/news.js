@@ -75,3 +75,22 @@ export const topNews = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
+export const deleteNews = async (req, res) => {
+  const { id } = req.query; 
+  try {
+    const sql = `DELETE FROM news WHERE newsId = ?`;
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows === 1) {
+      return res.status(200).json({ successMessage: "News deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "News not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
