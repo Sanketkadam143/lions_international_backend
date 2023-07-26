@@ -57,8 +57,9 @@ export const getCategory = async (req, res) => {
 export const getPlaceholder = async (req, res) => {
   try {
     const { category } = req.query;
-    const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category = ?`;
-    const [data] = await db.promise().query(sql, [category]);
+    const searchTerm = `%${category}%`;
+    const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category LIKE ?`;
+    const [data] = await db.promise().query(sql, [searchTerm]);
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -138,10 +139,11 @@ export const addActivity = async (req, res) => {
     }
     const [rows] = await db
       .promise()
-      .query("SELECT star FROM activitytype WHERE category=?", [
-        activityCategory,
+      .query("SELECT star FROM activitytype WHERE category LIKE ?", [
+        `%${activityCategory}%`,
       ]);
-    const star = rows[0].star;
+
+    const star = rows[0]?.star;
     let activityStars = star * (placeHolderValue || 1);
 
     // custom change in activity points for lions bangalore
