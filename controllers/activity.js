@@ -68,7 +68,8 @@ export const getPlaceholder = async (req, res) => {
 };
 
 export const getReportedActivity = async (req, res) => {
-  const clubId = req.clubId;
+  let clubId = req.clubId;
+  if(req.query.clubId) clubId = req.query.clubId;
   try {
     const sql = `SELECT * FROM activities WHERE clubId=?`;
     const [activities] = await db.promise().query(sql, [clubId]);
