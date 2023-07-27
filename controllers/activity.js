@@ -216,14 +216,14 @@ export const events = async (req, res) => {
     const offset = (page - 1) * limit;
 
     const upcomingSql = `
-      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType, cabinetOfficers
+      SELECT activityId, activityTitle, date, description, image_path,image_path2, clubId, place, activityCategory, activityType, cabinetOfficers
       FROM activities 
       WHERE date >= CURRENT_DATE() 
       ORDER BY date ASC 
       LIMIT ${limit} OFFSET ${offset}
     `;
     const pastSql = `
-      SELECT activityId, activityTitle, date, description, image_path, clubId, place, activityCategory, activityType, cabinetOfficers
+      SELECT activityId, activityTitle, date, description, image_path,image_path2, clubId, place, activityCategory, activityType, cabinetOfficers
       FROM activities 
       WHERE date < CURRENT_DATE() 
       ORDER BY date DESC 
