@@ -204,3 +204,25 @@ export const getDistrictData = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
+
+
+export const regionActivities = async (req, res) => {
+  const regionName = req.regionName;
+
+  try {
+    
+    const sql = "SELECT DISTINCT clubId from users where regionName = ?";
+    const [clubsData] = await db.promise().query(sql, [regionName]);
+    const clubIds = clubsData.map((row) => row.clubId);
+
+    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(",")})`;
+    const [activitiesData] = await db.promise().query(sql2);
+
+    return res.status(200).json({activitiesData,successMessage:"Region Activities Downloaded"});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
