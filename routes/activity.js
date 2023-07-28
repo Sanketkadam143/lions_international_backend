@@ -1,5 +1,5 @@
 import express from "express";
-import {getActivity,getSubtype,getCategory, registerActivity,addActivity, getClubDirector,getPlaceholder,getReportedActivity,getActivityStats,events,deleteActivity} from "../controllers/activity.js";
+import {getActivity,getSubtype,getCategory, registerActivity,addActivity, getClubDirector,getPlaceholder,getReportedActivity,getActivityStats,events,deleteActivity,regionActivities,zoneActivities} from "../controllers/activity.js";
 import auth from '../middleware/auth.js';
 import upload from "../middleware/imageMulter.js";
 
@@ -16,5 +16,7 @@ router.get('/reportedactivity',auth,getReportedActivity);
 router.delete('/deleteactivity',auth,deleteActivity);
 router.post('/addactivity',auth,upload.array("image",2),addActivity);
 router.post('/register',registerActivity);
+router.get('/region/allactivities',auth,regionActivities);
+router.get('/zone/allactivities',auth,zoneActivities);
 
 export default router;

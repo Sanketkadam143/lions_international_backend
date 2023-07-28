@@ -4,12 +4,14 @@ import jwt from "jsonwebtoken";
 import { passwordStrength } from "check-password-strength";
 import validator from "validator";
 import connection from "../config/dbconnection.js";
+import sendMail from "../utils/sendMail.js";
 import dotenv from "dotenv";
 dotenv.config();
 const db = await connection();
 
 const JWTKEY = process.env.JWTKEY;
 const JWT_EXPIRE = process.env.JWT_EXPIRE;
+const JWT_RESETPASSWORD = process.env.JWT_RESETPASSWORD;
 
 export const signIn = async (req, res) => {
   const { memberId, password } = req.body;
@@ -34,11 +36,11 @@ export const signIn = async (req, res) => {
         clubId: rows[0].clubId,
         firstName: rows[0].firstName,
         lastName: rows[0].lastName,
-        picture:rows[0].profilePicture,
-        regionName:rows[0].regionName,
-        zoneName:rows[0].zoneName,
-        email:rows[0].email,
-        phone:rows[0].phone,
+        picture: rows[0].profilePicture,
+        regionName: rows[0].regionName,
+        zoneName: rows[0].zoneName,
+        email: rows[0].email,
+        phone: rows[0].phone,
         detailsRequired: rows[0].verified === 1 ? false : true,
       },
       JWTKEY,
@@ -51,7 +53,7 @@ export const signIn = async (req, res) => {
       successMessage: "You are Successfully Logged in",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -108,24 +110,41 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-
 export const forgotPassword = async (req, res) => {
-  const { email } = req.body;
+  const { email, memberId } = req.body;
   try {
-    const user = await db.promise().query("SELECT * FROM users WHERE email = ?", [email]);
+    const [user] = await db
+      .promise()
+      .query("SELECT id,email,firstName,lastName FROM users WHERE id = ?", [memberId]);
     if (user.length === 0) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    const token = crypto.randomBytes(20).toString("hex");
-    
-    await db.promise().query("UPDATE users SET reset_token = ? WHERE id = ?", [token, user[0].id]);
+    if (user[0].email !== email) {
+      return res.status(400).json({ message: "Email does not match" });
+    }
 
-    const resetLink = `https://example.com/reset-password?token=${token}`;
-   
-   // await sendMail(resetLink,email);
+    const token = jwt.sign(
+      {
+        id: memberId,
+        email: email,
+      },
+      JWTKEY,
+      {
+        expiresIn: JWT_RESETPASSWORD,
+      }
+    );
 
-    return res.status(200).json({ message: "Email sent with reset password link" });
+    const domain_url = process.env.DOMAIN_URL;
+    const resetLink = `${domain_url}/password?token=${token}`;
+    const userName =user[0].firstName + " " + user[0].lastName;
+
+    //send mail to user
+    await sendMail(userName,email,resetLink);
+
+    return res
+      .status(200)
+      .json({ successMessage: "Email sent with reset password link" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

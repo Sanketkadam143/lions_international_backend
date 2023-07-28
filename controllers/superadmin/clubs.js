@@ -21,7 +21,7 @@ export const addClub = async (req, res) => {
 
 export const getClub = async (req, res) => {
   try {
-    const sql = "SELECT clubId, clubName, adminstars,lastupdated FROM clubs";
+    const sql = "SELECT clubId, clubName, adminstars, lastupdated FROM clubs ORDER BY clubName";
     const [rows] = await db.promise().query(sql);
     return res.status(200).json(rows);
   } catch (error) {
@@ -29,6 +29,7 @@ export const getClub = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 
 export const getClubActivities = async (req, res) => {
   const clubId = req.query;
