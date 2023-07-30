@@ -69,7 +69,7 @@ export const getPlaceholder = async (req, res) => {
 
 export const getReportedActivity = async (req, res) => {
   let clubId = req.clubId;
-  if(req.query.clubId) clubId = req.query.clubId;
+  if (req.query.clubId) clubId = req.query.clubId;
   try {
     const sql = `SELECT * FROM activities WHERE clubId=?`;
     const [activities] = await db.promise().query(sql, [clubId]);
@@ -108,6 +108,107 @@ export const deleteActivity = async (req, res) => {
   }
 };
 
+export const editActivity = async (req, res) => {
+  const {
+    amount,
+    activityTitle,
+    city,
+    date,
+    cabinetOfficers,
+    description,
+    lionHours,
+    mediaCoverage,
+    activityType,
+    activitySubType,
+    activityCategory,
+    place,
+    placeholder,
+    activityId,
+  } = req.body;
+
+  try {
+    let image_path = "";
+    if (req.files?.[0]) {
+      image_path = `/images/activity/${req.files[0].originalname}`;
+      const folder = path.resolve(__dirname, "..") + image_path;
+      await sharp(req.files[0].buffer).png().toFile(folder);
+    }
+
+    let image_path2 = "";
+    if (req.files?.[1]) {
+      image_path2 = `/images/activity/${req.files[1].originalname}`;
+      const folder = path.resolve(__dirname, "..") + image_path2;
+      await sharp(req.files[1].buffer).png().toFile(folder);
+    }
+
+    //pending logic for lions goa
+
+    // const [rows] = await db
+    //   .promise()
+    //   .query("SELECT star FROM activitytype WHERE category LIKE ?", [
+    //     `%${activityCategory}%`,
+    //   ]);
+
+    // const star = rows[0]?.star;
+    // let activityStars = star * (placeholder || 1);
+
+    // custom change in activity points for lions bangalore
+    // let activityStars = 1;
+    // if (
+    //   process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
+    //   process.env.DOMAIN_URL.includes("lions317f.org")
+    // ) {
+    //   activityStars = 1;
+    // }
+
+    // await db
+    //   .promise()
+    //   .query(
+    //     "UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;",
+    //     [activityStars, clubId]
+    //   );
+    // Check if image_path or image_path2 is present, and construct the update query accordingly
+    let updateFields = {
+      amount,
+      activityTitle,
+      city,
+      date,
+      cabinetOfficers,
+      description,
+      lionHours,
+      mediaCoverage,
+      activityType,
+      activitySubType,
+      activityCategory,
+      place,
+      placeholder,
+    };
+
+    if (image_path) {
+      updateFields.image_path = image_path;
+    }
+
+    if (image_path2) {
+      updateFields.image_path2 = image_path2;
+    }
+
+    // Update the activity with the given activityId
+     await db
+      .promise()
+      .query("UPDATE activities SET ? WHERE activityId = ?", [
+        updateFields,
+        activityId,
+      ]);
+
+    return res
+      .status(200)
+      .json({ successMessage: `Activity ${activityId} updated successfully` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export const addActivity = async (req, res) => {
   const {
     amount,
@@ -122,7 +223,7 @@ export const addActivity = async (req, res) => {
     activitySubType,
     activityCategory,
     place,
-    placeHolderValue,
+    placeholder,
   } = req.body;
 
   const clubId = req.clubId;
@@ -145,7 +246,7 @@ export const addActivity = async (req, res) => {
       ]);
 
     const star = rows[0]?.star;
-    let activityStars = star * (placeHolderValue || 1);
+    let activityStars = star * (placeholder || 1);
 
     // custom change in activity points for lions bangalore
     if (
@@ -155,7 +256,6 @@ export const addActivity = async (req, res) => {
       activityStars = 1;
     }
 
-    const placeHolder = placeHolderValue;
     await db
       .promise()
       .query(
@@ -175,13 +275,12 @@ export const addActivity = async (req, res) => {
       activitySubType,
       activityCategory,
       place,
-      placeHolder,
+      placeholder,
       clubId,
       activityStars,
       image_path,
       image_path2,
     });
-
 
     const activityId = result[0]?.insertId;
 
@@ -294,40 +393,45 @@ export const registerActivity = async (req, res) => {
   }
 };
 
-
 export const regionActivities = async (req, res) => {
   const regionName = req.regionName;
 
   try {
-    
     const sql = "SELECT DISTINCT clubId from users where regionName = ?";
     const [clubsData] = await db.promise().query(sql, [regionName]);
     const clubIds = clubsData.map((row) => row.clubId);
 
-    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(",")})`;
+    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(
+      ","
+    )})`;
     const [activitiesData] = await db.promise().query(sql2);
 
-    return res.status(200).json({activitiesData,successMessage:"Region Activities Downloaded"});
+    return res
+      .status(200)
+      .json({ activitiesData, successMessage: "Region Activities Downloaded" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
-
 export const zoneActivities = async (req, res) => {
   const regionName = req.regionName;
   const zoneName = req.zoneName;
   try {
-    
-    const sql = "SELECT DISTINCT clubId from users where regionName = ? and zoneName = ?";
-    const [clubsData] = await db.promise().query(sql, [regionName,zoneName]);
+    const sql =
+      "SELECT DISTINCT clubId from users where regionName = ? and zoneName = ?";
+    const [clubsData] = await db.promise().query(sql, [regionName, zoneName]);
     const clubIds = clubsData.map((row) => row.clubId);
 
-    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(",")})`;
+    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(
+      ","
+    )})`;
     const [activitiesData] = await db.promise().query(sql2);
 
-    return res.status(200).json({activitiesData,successMessage:"Zone Activities Downloaded"});
+    return res
+      .status(200)
+      .json({ activitiesData, successMessage: "Zone Activities Downloaded" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

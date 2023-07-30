@@ -22,6 +22,7 @@ function createConnection() {
         password: PASSWORD,
         database: DATABASE,
         port: PORT,
+        timezone: 'utc',
       });
 
       connection.connect((err) => {

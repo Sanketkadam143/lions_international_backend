@@ -27,11 +27,14 @@ const db = await connection();
 
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+if (process.env.ENVIRONMENT === "local") {
+  app.use(
+    cors({
+      origin: "*",
+    })
+  );
+}
+
 
 // app.use(session({
 //   secret: process.env.SESSION_KEY,

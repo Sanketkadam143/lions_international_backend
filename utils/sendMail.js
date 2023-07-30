@@ -40,8 +40,11 @@ export default async function sendMail(userName, email, resetLink) {
                             <div>
                               <h1 style="margin-top:0;color:#333333;font-size:22px;font-weight:bold;text-align:left">Hii ${userName}</h1>
                               <p style="margin:.4em 0 1.1875em;font-size:16px;line-height:1.625;color:#51545e">
-                                To reset your password, please follow the button bellow
+                                To reset your password, please follow the button below
                               </p>
+                              <p style="margin:.4em 0 1.1875em;font-size:16px;line-height:1.625;color:#51545e">
+                              Link is valid till 1 hour. You can generate it again if expire.
+                             </p>
                               <table align="center" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin:30px auto;padding:0;text-align:center">
                                 <tbody>
                                   <tr>

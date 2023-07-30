@@ -93,17 +93,12 @@ export const addReport = async (req, res) => {
         .json({ message: `Month ${month} reporting allready done` });
     }
     await db
-      .promise()
-      .query("UPDATE clubs SET adminstars = adminstars + ? WHERE clubId = ?;", [
-        adminstars,
-        clubId,
-      ]);
-    await db
-      .promise()
-      .query(`UPDATE clubs SET month${month} = ?  WHERE clubId = ?;`, [
-        1,
-        clubId,
-      ]);
+    .promise()
+    .query(
+      `UPDATE clubs SET adminstars = adminstars + ?,month${month} = 1 WHERE clubId = ?;`,
+      [adminstars, clubId]
+    );
+  
     data.forEach(async (element) => {
       const { id, month, title, adminstars, count } = element;
       try {
