@@ -1,6 +1,7 @@
 import connection from "../config/dbconnection.js";
 import sharp from "sharp";
 import path from "path";
+import fs from "fs";
 const db = await connection();
 
 const __dirname = path.dirname(
@@ -91,7 +92,35 @@ export const getReportedActivity = async (req, res) => {
 
 export const deleteActivity = async (req, res) => {
   const { activityId } = req.query;
+  const clubId = req.clubId;
   try {
+    const sql2 = `SELECT activityCategory,placeholder FROM activities WHERE activityId=?`;
+    const [activityCategoryData] = await db.promise().query(sql2, [activityId]);
+
+    const [rows] = await db
+      .promise()
+      .query("SELECT star FROM activitytype WHERE category LIKE ?", [
+        `%${activityCategoryData[0].activityCategory}%`,
+      ]);
+
+    const star = rows[0]?.star;
+    let activityStars = star * (activityCategoryData[0].placeholder || 1);
+
+    // custom change in activity points for lions bangalore
+    if (
+      process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
+      process.env.DOMAIN_URL.includes("lions317f.org")
+    ) {
+      activityStars = 1;
+    }
+
+    await db
+      .promise()
+      .query(
+        "UPDATE clubs SET activitystar = activitystar - ? WHERE clubId = ?;",
+        [activityStars, clubId]
+      );
+
     const sql = `DELETE FROM activities WHERE activityId = ?`;
     const [result] = await db.promise().query(sql, [activityId]);
 
@@ -131,14 +160,29 @@ export const editActivity = async (req, res) => {
     if (req.files?.[0]) {
       image_path = `/images/activity/${req.files[0].originalname}`;
       const folder = path.resolve(__dirname, "..") + image_path;
-      await sharp(req.files[0].buffer).png().toFile(folder);
+
+      fs.writeFile(folder, req.files[0].buffer, (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Something went wrong" });
+        }
+      });
+      // await sharp(req.files[0].buffer).png().toFile(folder);
     }
 
     let image_path2 = "";
     if (req.files?.[1]) {
       image_path2 = `/images/activity/${req.files[1].originalname}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
-      await sharp(req.files[1].buffer).png().toFile(folder);
+
+      fs.writeFile(folder, req.files[1].buffer, (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Something went wrong" });
+        }
+      });
+
+      //await sharp(req.files[1].buffer).png().toFile(folder);
     }
 
     //pending logic for lions goa
@@ -193,7 +237,7 @@ export const editActivity = async (req, res) => {
     }
 
     // Update the activity with the given activityId
-     await db
+    await db
       .promise()
       .query("UPDATE activities SET ? WHERE activityId = ?", [
         updateFields,
@@ -231,13 +275,27 @@ export const addActivity = async (req, res) => {
   try {
     const image_path = `/images/activity/${req.files[0].originalname}`;
     const folder = path.resolve(__dirname, "..") + image_path;
-    await sharp(req.files[0].buffer).png().toFile(folder);
+
+    fs.writeFile(folder, req.files[0].buffer, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Something went wrong" });
+      }
+    });
+    // await sharp(req.files[0].buffer).png().toFile(folder);
 
     let image_path2 = "";
     if (req.files?.[1]) {
       image_path2 = `/images/activity/${req.files[1].originalname}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
-      await sharp(req.files[1].buffer).png().toFile(folder);
+
+      fs.writeFile(folder, req.files[1].buffer, (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Something went wrong" });
+        }
+      });
+      //  await sharp(req.files[1].buffer).png().toFile(folder);
     }
     const [rows] = await db
       .promise()

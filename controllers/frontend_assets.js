@@ -30,7 +30,7 @@ export const addFrontendAssets = async (req, res) => {
 
     const filePath = path.resolve(__dirname, "..", "frontend_assets", filename);
 
-    fs.writeFile(filePath, req.file.buffer, (err) => {
+     fs.writeFile(filePath, req.file.buffer, (err) => {
       if (err) {
         console.log(err);
         return res.status(500).json({ message: "Something went wrong" });

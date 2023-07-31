@@ -51,7 +51,14 @@ export const updateProfile = async (req, res) => {
       const newFileName = `${firstName.toLowerCase()}${lastName.toLowerCase()}${extension}`;
       imagePath = `/images/profile/${newFileName}`;
       const folder = path.resolve(__dirname, "..") + imagePath;
-      await sharp(req.file.buffer).png().toFile(folder);
+      fs.writeFile(folder, req.file.buffer, (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Something went wrong" });
+        }
+      });
+
+      // await sharp(req.file.buffer).png().toFile(folder);
     }
     const userData = {
       firstName,

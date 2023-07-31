@@ -3,7 +3,9 @@ import sharp from "sharp";
 import path from "path";
 const db = await connection();
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1'));
+const __dirname = path.dirname(
+  new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")
+);
 
 export const reportedNews = async (req, res) => {
   const clubId = req.clubId;
@@ -25,7 +27,15 @@ export const newsReporting = async (req, res) => {
   try {
     const imagePath = `/images/news/${req.file.originalname}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
-    await sharp(req.file.buffer).png().toFile(folder);
+
+    fs.writeFile(folder, req.file.buffer, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Something went wrong" });
+      }
+    });
+
+    //await sharp(req.file.buffer).png().toFile(folder);
 
     const sql =
       "INSERT INTO news (clubId, authorId, verified, newsTitle, newsPaperLink, date, description, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -76,15 +86,16 @@ export const topNews = async (req, res) => {
   }
 };
 
-
 export const deleteNews = async (req, res) => {
-  const { id } = req.query; 
+  const { id } = req.query;
   try {
     const sql = `DELETE FROM news WHERE newsId = ?`;
     const [result] = await db.promise().query(sql, [id]);
 
     if (result.affectedRows === 1) {
-      return res.status(200).json({ successMessage: "News deleted successfully" });
+      return res
+        .status(200)
+        .json({ successMessage: "News deleted successfully" });
     } else {
       return res.status(404).json({ message: "News not found" });
     }
@@ -93,4 +104,3 @@ export const deleteNews = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
