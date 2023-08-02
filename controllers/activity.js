@@ -34,8 +34,9 @@ export const getActivity = async (req, res) => {
 export const getSubtype = async (req, res) => {
   try {
     const { type } = req.query;
-    const sql = `SELECT DISTINCT subtype FROM activitytype WHERE type = ?`;
-    const [data] = await db.promise().query(sql, [type]);
+    const searchTerm = `%${type.trim()}%`;
+    const sql = `SELECT DISTINCT subtype FROM activitytype WHERE type LIKE ?`;
+    const [data] = await db.promise().query(sql, [searchTerm]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -45,9 +46,11 @@ export const getSubtype = async (req, res) => {
 
 export const getCategory = async (req, res) => {
   try {
-    const { subtype } = req.query;
-    const sql = `SELECT DISTINCT category FROM activitytype WHERE subtype = ?`;
-    const [data] = await db.promise().query(sql, [subtype]);
+    const { subtype, type } = req.query;
+    const searchTerm1 = `%${subtype.trim()}%`;
+    const searchTerm2 = `%${type.trim()}%`;
+    const sql = `SELECT DISTINCT category FROM activitytype WHERE subtype LIKE ? and type LIKE ?`;
+    const [data] = await db.promise().query(sql, [searchTerm1, searchTerm2]);
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -57,10 +60,16 @@ export const getCategory = async (req, res) => {
 
 export const getPlaceholder = async (req, res) => {
   try {
-    const { category } = req.query;
-    const searchTerm = `%${category}%`;
-    const sql = `SELECT DISTINCT placeholder FROM activitytype WHERE category LIKE ?`;
-    const [data] = await db.promise().query(sql, [searchTerm]);
+    const { category, type, subtype } = req.query;
+
+    const searchTerm1 = `%${category.trim()}%`;
+    const searchTerm2 = `%${type.trim()}%`;
+    const searchTerm3 = `%${subtype.trim()}%`;
+    const sql = `SELECT  placeholder FROM activitytype WHERE category LIKE ? and type LIKE ? and subtype LIKE ?`;
+    const [data] = await db
+      .promise()
+      .query(sql, [searchTerm1, searchTerm2, searchTerm3]);
+
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
