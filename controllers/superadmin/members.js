@@ -14,11 +14,9 @@ export const getMember = async (req, res) => {
   }
 };
 
-
-
 export const getRegions = async (req, res) => {
   try {
-    const sql = "SELECT DISTINCT regionName FROM users AS regions;";
+    const sql = "SELECT DISTINCT regionName FROM users AS regions ORDER BY regionName ASC;";
     const data = await db.promise().query(sql);
 
     return res.status(200).json(data[0]);
@@ -31,7 +29,7 @@ export const getRegions = async (req, res) => {
 export const getZones = async (req, res) => {
   const regionName = req.query.region;
   try {
-    const sql = "SELECT DISTINCT zoneName FROM users WHERE regionName =?;";
+    const sql = "SELECT DISTINCT zoneName FROM users WHERE regionName =? ORDER BY zoneName ASC;";
     const data = await db.promise().query(sql, [regionName]);
 
     return res.status(200).json(data[0]);
@@ -120,6 +118,8 @@ export const addMember = async (req, res) => {
   }
 
   try {
+    const titles = title.join("-");
+
     // Perform your database query or operation here
     const sql =
       "INSERT INTO users (clubName, clubId, regionName, title, zoneName, firstName, middleName, lastName, id, spouseName, dob, email, phone, gender, occupation, postalCode, state, city, address1, address2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -127,7 +127,7 @@ export const addMember = async (req, res) => {
       clubName,
       clubId,
       regionName,
-      title,
+      titles,
       zoneName,
       firstName,
       middleName,

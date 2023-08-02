@@ -1,7 +1,6 @@
 import connection from "../../config/dbconnection.js";
 const db = await connection();
 
-
 export const getActivity = async (req, res) => {
   try {
     const sql = "SELECT distinct type FROM activitytype";
@@ -37,29 +36,35 @@ export const getCategory = async (req, res) => {
   }
 };
 
-export const AddActivity=async(req,res)=>{
+export const AddActivity = async (req, res) => {
+  const {
+    activityType,
+    activitySubType,
+    activityCategory,
+    placeHolderValue,
+    beneficiaries,
+    star,
+  } = req.body;
+  const type = activityType;
+  const subtype = activitySubType;
+  const category = activityCategory;
+  const placeholder = placeHolderValue;
 
-  const {activityType,activitySubType,activityCategory,placeHolderValue,beneficiaries,star}=req.body;
-  const type=activityType;
-  const subtype=activitySubType;
-  const category=activityCategory;
-  const placeholder=placeHolderValue;
-
-  try{
-    const sql='Insert into activitytype (type,subtype,category,placeholder,beneficiaries,star)VALUES (?,?,?,?,?,?)';
+  try {
+    const sql =
+      "Insert into activitytype (type,subtype,category,placeholder,beneficiaries,star)VALUES (?,?,?,?,?,?)";
     await db
-    .promise()
-    .query(sql, [type, subtype, category, placeholder,beneficiaries,star]);
+      .promise()
+      .query(sql, [type, subtype, category, placeholder, beneficiaries, star]);
 
-  return res
-    .status(200)
-    .json({ successMessage: `activity added successfully` });
-  }
-  catch(error){
+    return res
+      .status(200)
+      .json({ successMessage: `activity added successfully` });
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
-}
+};
 export const stats = async (req, res) => {
   try {
     const [result] = await db.promise().query(`
@@ -72,48 +77,44 @@ export const stats = async (req, res) => {
         (SELECT COUNT(*) FROM users) AS totalMembers;
     `);
 
-    return res
-      .status(200)
-      .json({
-        totalActivities: result[0].totalActivities,
-        totalClubs: result[0].totalClubs,
-        totalExpenses: -result[0].totalExpenses,
-        beneficiaryServed: result[0].beneficiaryServed,
-        totalLionHours: result[0].totalLionHours,
-        totalMembers: result[0].totalMembers
-      });
+    return res.status(200).json({
+      totalActivities: result[0].totalActivities,
+      totalClubs: result[0].totalClubs,
+      totalExpenses: -result[0].totalExpenses,
+      beneficiaryServed: result[0].beneficiaryServed,
+      totalLionHours: result[0].totalLionHours,
+      totalMembers: result[0].totalMembers,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
-
-export const upComingActivity=async(req,res)=>{
-  const {activityTitle, chifGuest, place, date}=req.body;
-  try{
-    const sql=`SELECT activityTitle,description, chifGuest, place, date
+export const upComingActivity = async (req, res) => {
+  try {
+    const sql = `SELECT activityTitle,description, place, date
     FROM activities
-    WHERE date >= CURDATE() ORDER BY date ASC;`
-    const params = [activityTitle, chifGuest, place, date];
-    const [rows] = await db.promise().query(sql, params);
-    return res.status(200).json(rows);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Something went wrong" });
-  }
-}
+    WHERE date >= CURDATE() ORDER BY date ASC;`;
 
-export const allActivities=async(req,res)=>{
-  const {type,subtype,category,placeholder}=req.body;
-  try{
-    const sql=`SELECT type,subtype,category,placeholder
-    FROM activitytype`
-    const params = [type,subtype,category,placeholder];
+    const [rows] = await db.promise().query(sql);
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const allActivities = async (req, res) => {
+  const { type, subtype, category, placeholder } = req.body;
+  try {
+    const sql = `SELECT type,subtype,category,placeholder
+    FROM activitytype`;
+    const params = [type, subtype, category, placeholder];
     const [rows] = await db.promise().query(sql, params);
     return res.status(200).json(rows);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
-}
+};
