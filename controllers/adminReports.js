@@ -81,7 +81,7 @@ export const addReport = async (req, res) => {
       }
     });
 
-    const pathToSave = `images/adminReports/${filename}`;
+    const pathToSave = `/images/adminReports/${filename}`;
     const adminstars = calculatePoints(data);
 
     const [rows] = await db
