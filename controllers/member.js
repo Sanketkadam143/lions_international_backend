@@ -216,6 +216,7 @@ export const MemberDirectory = async (req, res) => {
       SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture
       FROM users
       ${whereClause}
+      ORDER BY fullName
       LIMIT ${rowsPerPage} OFFSET ${offset};
     `;
     const data = await db.promise().query(sql);
