@@ -1,6 +1,7 @@
 import connection from "../config/dbconnection.js";
 import sharp from "sharp";
 import path from "path";
+import fs from "fs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
