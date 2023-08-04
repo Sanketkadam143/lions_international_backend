@@ -383,19 +383,22 @@ export const events = async (req, res) => {
     const offset = (page - 1) * limit;
 
     const upcomingSql = `
-      SELECT activityId, activityTitle, date, description, image_path,image_path2, clubId, place, activityCategory, activityType, cabinetOfficers
-      FROM activities 
-      WHERE date >= CURRENT_DATE() 
-      ORDER BY date ASC 
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    SELECT a.activityId, a.activityTitle, a.date, a.description, a.image_path, a.image_path2, a.clubId, a.place, a.activityCategory, a.activityType, a.cabinetOfficers, c.clubName
+    FROM activities a
+    JOIN clubs c ON a.clubId = c.clubId
+    WHERE a.date >= CURRENT_DATE() 
+    ORDER BY a.date ASC 
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
     const pastSql = `
-      SELECT activityId, activityTitle, date, description, image_path,image_path2, clubId, place, activityCategory, activityType, cabinetOfficers
-      FROM activities 
-      WHERE date < CURRENT_DATE() 
-      ORDER BY date DESC 
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+  SELECT a.activityId, a.activityTitle, a.date, a.description, a.image_path, a.image_path2, a.clubId, a.place, a.activityCategory, a.activityType, a.cabinetOfficers, c.clubName
+  FROM activities a
+  JOIN clubs c ON a.clubId = c.clubId
+  WHERE a.date < CURRENT_DATE() 
+  ORDER BY a.date DESC 
+  LIMIT ${limit} OFFSET ${offset}
+`;
 
     const [upcomingData] = await db.promise().query(upcomingSql);
     const [pastData] = await db.promise().query(pastSql);
