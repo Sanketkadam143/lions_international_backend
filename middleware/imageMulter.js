@@ -2,7 +2,7 @@ import multer from "multer";
 
 const upload = multer({
   limits: {
-    fileSize: 2000000    // 2mb size
+    fileSize: 5000000    // 5mb size
   },
   fileFilter(req, file, cb) {
     // if (!file.originalname.match(/\.(jpg|jpeg|png|pdf|PDF)$/)) {

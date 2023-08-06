@@ -2,6 +2,7 @@ import connection from "../config/dbconnection.js";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { uniqueName, writeFile } from "../utils/index.js";
 
 const db = await connection();
 
@@ -34,17 +35,10 @@ export const galleryImages = async (req, res) => {
 export const addGallery = async (req, res) => {
   const { title, description } = req.body;
   try {
-    const imagePath = `/images/gallery/${req.file.originalname}`;
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/gallery/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
-
-    fs.writeFile(folder, req.file.buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Something went wrong" });
-      }
-    });
-
-    // await sharp(req.file.buffer).png().toFile(folder);
+    await writeFile(folder, req.file.buffer);
 
     const sql1 = `INSERT INTO gallery(image,title,description) VALUES(?,?,?)`;
     await db.promise().query(sql1, [imagePath, title, description]);
@@ -59,17 +53,10 @@ export const addGallery = async (req, res) => {
 export const addSlider = async (req, res) => {
   const { title, description } = req.body;
   try {
-    const imagePath = `/images/slider/${req.file.originalname}`;
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/slider/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
-
-    fs.writeFile(folder, req.file.buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Something went wrong" });
-      }
-    });
-    
-   // await sharp(req.file.buffer).png().toFile(folder);
+    await writeFile(folder, req.file.buffer);
 
     const sql1 = `INSERT INTO slider(image,title,description) VALUES(?,?,?)`;
     await db.promise().query(sql1, [imagePath, title, description]);

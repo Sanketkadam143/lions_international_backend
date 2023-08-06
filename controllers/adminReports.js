@@ -3,6 +3,7 @@ import { calculatePoints } from "../utils/calculatePoints.js";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { uniqueName, writeFile } from "../utils/index.js";
 const db = await connection();
 
 const __dirname = path.dirname(
@@ -60,12 +61,7 @@ export const addReport = async (req, res) => {
   const month = JSON.parse(req.body.month);
 
   try {
-    let filename = req.file.originalname.replace(/\s/g, "");
-    filename = filename.toLowerCase();
-    filename = filename.replace(/[^a-z0-9.]/g, "-");
-    filename = filename.replace(/-+/g, "-").replace(/^-|-$/g, "");
-    const uniqueSuffix = Date.now();
-    filename = uniqueSuffix + "-" + filename;
+    let filename = uniqueName(req.file.originalname);
 
     const filePath = path.resolve(
       __dirname,
@@ -73,13 +69,7 @@ export const addReport = async (req, res) => {
       "images/adminReports",
       filename
     );
-
-    fs.writeFile(filePath, req.file.buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Error in uploading pdf" });
-      }
-    });
+    await writeFile(filePath, req.file.buffer);
 
     const pathToSave = `/images/adminReports/${filename}`;
     const adminstars = calculatePoints(data);

@@ -2,6 +2,7 @@ import connection from "../config/dbconnection.js";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { uniqueName, writeFile } from "../utils/index.js";
 const db = await connection();
 
 const __dirname = path.dirname(
@@ -26,17 +27,10 @@ export const newsReporting = async (req, res) => {
   const verified = 0;
   const { newsTitle, newsPaperLink, date, description, image } = req.body;
   try {
-    const imagePath = `/images/news/${req.file.originalname}`;
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/news/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
-
-    fs.writeFile(folder, req.file.buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Something went wrong" });
-      }
-    });
-
-    //await sharp(req.file.buffer).png().toFile(folder);
+    await writeFile(folder, req.file.buffer);
 
     const sql =
       "INSERT INTO news (clubId, authorId, verified, newsTitle, newsPaperLink, date, description, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

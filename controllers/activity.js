@@ -2,6 +2,7 @@ import connection from "../config/dbconnection.js";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { uniqueName, writeFile } from "../utils/index.js";
 const db = await connection();
 
 const __dirname = path.dirname(
@@ -167,31 +168,19 @@ export const editActivity = async (req, res) => {
   try {
     let image_path = "";
     if (req.files?.[0]) {
-      image_path = `/images/activity/${req.files[0].originalname}`;
+      const fileName = uniqueName(req.files[0].originalname);
+      image_path = `/images/activity/${fileName}`;
       const folder = path.resolve(__dirname, "..") + image_path;
-
-      fs.writeFile(folder, req.files[0].buffer, (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Something went wrong" });
-        }
-      });
-      // await sharp(req.files[0].buffer).png().toFile(folder);
+      await writeFile(folder, req.files[0].buffer);
     }
 
     let image_path2 = "";
     if (req.files?.[1]) {
-      image_path2 = `/images/activity/${req.files[1].originalname}`;
+      const fileName = uniqueName(req.files[1].originalname);
+      image_path2 = `/images/activity/${fileName}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
+      await writeFile(folder, req.files[1].buffer);
 
-      fs.writeFile(folder, req.files[1].buffer, (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Something went wrong" });
-        }
-      });
-
-      //await sharp(req.files[1].buffer).png().toFile(folder);
     }
 
     //pending logic for lions goa
@@ -282,29 +271,17 @@ export const addActivity = async (req, res) => {
   const clubId = req.clubId;
 
   try {
-    const image_path = `/images/activity/${req.files[0].originalname}`;
+    const fileName = uniqueName(req.files[0].originalname);
+    const image_path = `/images/activity/${fileName}`;
     const folder = path.resolve(__dirname, "..") + image_path;
-
-    fs.writeFile(folder, req.files[0].buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Something went wrong" });
-      }
-    });
-    // await sharp(req.files[0].buffer).png().toFile(folder);
+    await writeFile(folder, req.files[0].buffer);
 
     let image_path2 = "";
     if (req.files?.[1]) {
-      image_path2 = `/images/activity/${req.files[1].originalname}`;
+      const fileName = uniqueName(req.files[1].originalname);
+      image_path2 = `/images/activity/${fileName}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
-
-      fs.writeFile(folder, req.files[1].buffer, (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Something went wrong" });
-        }
-      });
-      //  await sharp(req.files[1].buffer).png().toFile(folder);
+      await writeFile(folder, req.files[1].buffer);
     }
     const [rows] = await db
       .promise()
@@ -367,7 +344,7 @@ export const getActivityStats = async (req, res) => {
         (SELECT COUNT(*) FROM activities) AS totalActivities, 
         (SELECT SUM(amount) FROM activities) AS totalAmountSpend, 
         (SELECT SUM(placeholder) FROM activities) AS beneficiariesServed, 
-        (SELECT COUNT(DISTINCT clubId) FROM users) AS totalClubs, 
+        (SELECT COUNT(DISTINCT clubId) FROM clubs) AS totalClubs, 
         (SELECT SUM(amount) FROM expenses WHERE type = 'deposite') AS amountRaised
     `;
     const [[data]] = await db.promise().query(sql);
