@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { uniqueName, writeFile } from "../utils/index.js";
 
 const __dirname = path
   .dirname(new URL(import.meta.url).pathname)
@@ -21,26 +22,16 @@ export const getFrontendAssets = async (req, res) => {
 
 export const addFrontendAssets = async (req, res) => {
   try {
-    let filename = req.file.originalname.replace(/\s/g, "");
-    filename = filename.toLowerCase();
-    filename = filename.replace(/[^a-z0-9.]/g, "-");
-    filename = filename.replace(/-+/g, "-").replace(/^-|-$/g, "");
-    const uniqueSuffix = Date.now();
-    filename = uniqueSuffix + "-" + filename;
+    const fileName = uniqueName(req.file.originalname);
 
-    const filePath = path.resolve(__dirname, "..", "frontend_assets", filename);
+    const filePath = path.resolve(__dirname, "..", "frontend_assets", fileName);
 
-     fs.writeFile(filePath, req.file.buffer, (err) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ message: "Something went wrong" });
-      }
+    await writeFile(filePath, req.file.buffer);
 
-      const fileUrl = process.env.DOMAIN_URL + "/api/static/assets/" + filename;
-      return res
-        .status(200)
-        .json({ fileUrl, successMessage: "File added successfully" });
-    });
+    const fileUrl = process.env.DOMAIN_URL + "/api/static/assets/" + fileName;
+    return res
+      .status(200)
+      .json({ fileUrl, successMessage: "File added successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

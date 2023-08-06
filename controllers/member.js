@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { writeFile } from "../utils/index.js";
 dotenv.config();
 
 const JWTKEY = process.env.JWTKEY;
@@ -52,14 +53,7 @@ export const updateProfile = async (req, res) => {
       const newFileName = `${firstName.toLowerCase()}${lastName.toLowerCase()}${extension}`;
       imagePath = `/images/profile/${newFileName}`;
       const folder = path.resolve(__dirname, "..") + imagePath;
-      fs.writeFile(folder, req.file.buffer, (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Something went wrong" });
-        }
-      });
-
-      // await sharp(req.file.buffer).png().toFile(folder);
+      await writeFile(folder, req.file.buffer);
     }
     const userData = {
       firstName,
