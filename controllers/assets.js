@@ -35,6 +35,11 @@ export const galleryImages = async (req, res) => {
 export const addGallery = async (req, res) => {
   const { title, description } = req.body;
   try {
+
+    if(!req.file || !title || !description){
+      return res.status(400).json({ message: "Please fill all the fields" });
+    }
+
     const fileName = uniqueName(req.file.originalname);
     const imagePath = `/images/gallery/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
@@ -53,6 +58,9 @@ export const addGallery = async (req, res) => {
 export const addSlider = async (req, res) => {
   const { title, description } = req.body;
   try {
+    if(!req.file || !title || !description){
+      return res.status(400).json({ message: "Please fill all the fields" });
+    }
     const fileName = uniqueName(req.file.originalname);
     const imagePath = `/images/slider/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
@@ -74,6 +82,51 @@ export const getResourcesByCategory = async (req, res) => {
     const sql = `SELECT id,title,path,category FROM resources`;
     const data = await db.promise().query(sql, { id, title, path, category });
     return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteSlider = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM slider WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "Slider Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Slider Not Found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const deleteGallery = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM gallery WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "Gallery Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Gallery Not Found" });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
