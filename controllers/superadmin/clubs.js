@@ -2,11 +2,28 @@ import connection from "../../config/dbconnection.js";
 const db = await connection();
 
 export const addClub = async (req, res) => {
-  const { clubName, clubId } = req.body;
+  const { clubName, clubId, regionName, zoneName } = req.body;
 
   try {
-    const sql = "INSERT INTO clubs (clubName, clubId) VALUES (?, ?)";
-    await db.promise().query(sql, [clubName, clubId]);
+    if (!clubName || !clubId || !regionName || !zoneName) {
+      return res.status(400).json({
+        message: "Please fill all the fields",
+      });
+    }
+
+    // Check if the clubId already exists in the database
+    const checkSql = "SELECT clubId FROM clubs WHERE clubId = ?";
+    const [rows] = await db.promise().query(checkSql, [clubId]);
+
+    if (rows.length > 0) {
+      return res.status(400).json({
+        message: "Club ID already exists",
+      });
+    }
+
+    const sql =
+      "INSERT INTO clubs (clubName, clubId, regionName, zoneName) VALUES (?, ?, ?, ?)";
+    await db.promise().query(sql, [clubName.toUpperCase(), clubId, regionName, zoneName]);
 
     return res.status(200).json({
       successMessage: "Club added successfully",
@@ -14,10 +31,11 @@ export const addClub = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      errorMessage: "Something went wrong",
+      message: "Something went wrong",
     });
   }
 };
+
 
 export const getClub = async (req, res) => {
   try {
@@ -67,8 +85,10 @@ export const getClubnews = async (req, res) => {
 export const getClubAdminReport = async (req, res) => {
   const { clubId, month } = req.query;
   try {
-    if(!month || !clubId){
-      return res.status(404).json({ message: "Please provide month and clubId" });
+    if (!month || !clubId) {
+      return res
+        .status(404)
+        .json({ message: "Please provide month and clubId" });
     }
     const sql = `SELECT month${month}, activityStar, adminstars,clubName FROM clubs WHERE clubId=? ORDER BY clubName`;
     const [data] = await db.promise().query(sql, [clubId]);

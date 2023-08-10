@@ -16,7 +16,7 @@ export const getMember = async (req, res) => {
 
 export const getRegions = async (req, res) => {
   try {
-    const sql = "SELECT DISTINCT regionName FROM users AS regions ORDER BY regionName ASC;";
+    const sql = "SELECT DISTINCT regionName FROM clubs AS regions ORDER BY regionName ASC;";
     const data = await db.promise().query(sql);
 
     return res.status(200).json(data[0]);
@@ -29,7 +29,7 @@ export const getRegions = async (req, res) => {
 export const getZones = async (req, res) => {
   const regionName = req.query.region;
   try {
-    const sql = "SELECT DISTINCT zoneName FROM users WHERE regionName =? ORDER BY zoneName ASC;";
+    const sql = "SELECT DISTINCT zoneName FROM clubs WHERE regionName =? ORDER BY zoneName ASC;";
     const data = await db.promise().query(sql, [regionName]);
 
     return res.status(200).json(data[0]);
@@ -44,7 +44,7 @@ export const getClub = async (req, res) => {
   const zoneName = req.query.zone;
   try {
     const sql =
-      "SELECT DISTINCT clubName,clubId FROM users WHERE regionName = ? AND zoneName = ?;";
+      "SELECT DISTINCT clubName,clubId FROM clubs WHERE regionName = ? AND zoneName = ?;";
     const data = await db.promise().query(sql, [regionName, zoneName]);
 
     return res.status(200).json(data[0]);

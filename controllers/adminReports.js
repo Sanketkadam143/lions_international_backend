@@ -24,8 +24,11 @@ export const getReports = async (req, res) => {
         .json({ message: `Month ${month} reporting allready done` });
     }
 
-    const sql = "SELECT * FROM adminreports WHERE month=7";
-    const data = await db.promise().query(sql);
+    const sql = "SELECT * FROM adminreports WHERE month=?";
+    const data = await db.promise().query(sql, [month]);
+    if (data[0].length === 0) {
+      return res.status(404).json({ message: "Reports not found" });
+    }
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -61,6 +64,17 @@ export const addReport = async (req, res) => {
   const month = JSON.parse(req.body.month);
 
   try {
+    
+    if(month !== data[0]?.month){
+      return res.status(400).json({ message: "Selected month and reporting points dont match" });
+    }
+    if(!month){
+      return res.status(400).json({ message: "Please select a month" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a file" });
+    }
+
     let filename = uniqueName(req.file.originalname);
 
     const filePath = path.resolve(
@@ -83,12 +97,12 @@ export const addReport = async (req, res) => {
         .json({ message: `Month ${month} reporting allready done` });
     }
     await db
-    .promise()
-    .query(
-      `UPDATE clubs SET adminstars = adminstars + ?,month${month} = 1 WHERE clubId = ?;`,
-      [adminstars, clubId]
-    );
-  
+      .promise()
+      .query(
+        `UPDATE clubs SET adminstars = adminstars + ?,month${month} = 1 WHERE clubId = ?;`,
+        [adminstars, clubId]
+      );
+
     data.forEach(async (element) => {
       const { id, month, title, adminstars, count } = element;
       try {
