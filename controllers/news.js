@@ -58,7 +58,7 @@ export const newsReporting = async (req, res) => {
 export const topNews = async (req, res) => {
   try {
     const page = req.query.page || 1;
-    const rowsPerPage = 10;
+    const rowsPerPage = 9;
     const offset = (page - 1) * rowsPerPage;
 
     // change verfied to 1 when testing is done

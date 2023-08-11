@@ -55,6 +55,7 @@ export const addGallery = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 export const addSlider = async (req, res) => {
   const { title, description } = req.body;
   try {
@@ -77,10 +78,10 @@ export const addSlider = async (req, res) => {
   }
 };
 export const getResourcesByCategory = async (req, res) => {
-  const { id, title, path, category } = req.body;
+  
   try {
     const sql = `SELECT id,title,path,category FROM resources`;
-    const data = await db.promise().query(sql, { id, title, path, category });
+    const data = await db.promise().query(sql);
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -132,3 +133,124 @@ export const deleteGallery = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
+export const addDistrictResources = async (req, res) => {
+  const { title} = req.body;
+  const category = "district";
+  try {
+
+    if(!req.file || !title ){
+      return res.status(400).json({ message: "title and image is mandatory" });
+    }
+
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/resources/${fileName}`;
+    const folder = path.resolve(__dirname, "..") + imagePath;
+    await writeFile(folder, req.file.buffer);
+
+    const sql1 = `INSERT INTO resources(path,title,category) VALUES(?,?,?)`;
+    await db.promise().query(sql1, [imagePath, title, category]);
+    return res
+      .status(200)
+      .json({ successMessage: "District Resource Added Successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const getDistrictResources = async (req, res) => {
+  try {
+    const sql = "SELECT * FROM resources WHERE category = 'district'";
+    const data = await db.promise().query(sql);
+
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteDistrictResources = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM resources WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "District Resources Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Data Not Found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const addInternationalResources = async (req, res) => {
+  const { title} = req.body;
+  const category = "international";
+  try {
+
+    if(!req.file || !title ){
+      return res.status(400).json({ message: "title and image is mandatory" });
+    }
+
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/resources/${fileName}`;
+    const folder = path.resolve(__dirname, "..") + imagePath;
+    await writeFile(folder, req.file.buffer);
+
+    const sql1 = `INSERT INTO resources(path,title,category) VALUES(?,?,?)`;
+    await db.promise().query(sql1, [imagePath, title, category]);
+    return res
+      .status(200)
+      .json({ successMessage: "International Resource Added Successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const getInternationalResources = async (req, res) => {
+  try {
+    const sql = "SELECT * FROM resources WHERE category = 'international'";
+    const data = await db.promise().query(sql);
+
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteInternationalResources = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM resources WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "International Resources Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Data Not Found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
