@@ -71,7 +71,7 @@ export const stats = async (req, res) => {
       SELECT
         (SELECT COUNT(*) FROM activities) AS totalActivities,
         (SELECT COUNT(*) FROM clubs) AS totalClubs,
-        (SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE type IN ('withdraw', 'expense')) AS totalExpenses,
+        (SELECT COALESCE(SUM(amount), 0) FROM activities) AS totalExpenses,
         (SELECT COALESCE(SUM(placeholder), 0) FROM activities) AS beneficiaryServed,
         (SELECT COALESCE(SUM(lionHours), 0) FROM activities) AS totalLionHours,
         (SELECT COUNT(*) FROM users) AS totalMembers;
@@ -80,7 +80,7 @@ export const stats = async (req, res) => {
     return res.status(200).json({
       totalActivities: result[0].totalActivities,
       totalClubs: result[0].totalClubs,
-      totalExpenses: -result[0].totalExpenses,
+      totalExpenses: result[0].totalExpenses,
       beneficiaryServed: result[0].beneficiaryServed,
       totalLionHours: result[0].totalLionHours,
       totalMembers: result[0].totalMembers,
@@ -93,9 +93,13 @@ export const stats = async (req, res) => {
 
 export const upComingActivity = async (req, res) => {
   try {
-    const sql = `SELECT activityTitle,description, place, date
-    FROM activities
-    WHERE date >= CURDATE() ORDER BY date ASC;`;
+    const sql = `
+    SELECT a.activityId, a.activityTitle, a.date, a.description, a.image_path, a.image_path2, a.clubId, a.place, a.activityCategory, a.activityType,a.activitySubtype, a.cabinetOfficers, a.amount,a.city,a.lionHours, c.clubName
+    FROM activities a
+    JOIN clubs c ON a.clubId = c.clubId
+    WHERE a.date >= CURRENT_DATE() 
+    ORDER BY a.date ASC 
+  `;
 
     const [rows] = await db.promise().query(sql);
     return res.status(200).json(rows);

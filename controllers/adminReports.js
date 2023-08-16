@@ -99,19 +99,19 @@ export const addReport = async (req, res) => {
     await db
       .promise()
       .query(
-        `UPDATE clubs SET adminstars = adminstars + ?,month${month} = 1 WHERE clubId = ?;`,
-        [adminstars, clubId]
+        `UPDATE clubs SET adminstars = adminstars + ?,month${month} = ? WHERE clubId = ?;`,
+        [adminstars,adminstars, clubId]
       );
 
     data.forEach(async (element) => {
-      const { id, month, title, adminstars, count } = element;
+      const { id, month, title, adminstars, count,srNo } = element;
       try {
         await db
           .promise()
           .query(
             "INSERT INTO reporting (titleId, month, title, adminstars, count,clubId, status,pdfPath) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
             [
-              id,
+              srNo,
               month,
               title,
               adminstars,
