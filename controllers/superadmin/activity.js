@@ -37,7 +37,7 @@ export const getCategory = async (req, res) => {
 };
 
 export const AddActivity = async (req, res) => {
-  const {
+  let {
     activityType,
     activitySubType,
     activityCategory,
@@ -49,8 +49,18 @@ export const AddActivity = async (req, res) => {
   const subtype = activitySubType;
   const category = activityCategory;
   const placeholder = placeHolderValue;
+  beneficiaries = beneficiaries ? beneficiaries : 0;
+  star = star ? star : 1;
 
   try {
+    if (
+      !type ||
+      !subtype ||
+      !category ||
+      !placeholder
+    ) {
+      return res.status(400).json({ message: "Please fill all the fields" });
+    }
     const sql =
       "Insert into activitytype (type,subtype,category,placeholder,beneficiaries,star)VALUES (?,?,?,?,?,?)";
     await db
@@ -59,7 +69,7 @@ export const AddActivity = async (req, res) => {
 
     return res
       .status(200)
-      .json({ successMessage: `activity added successfully` });
+      .json({ successMessage: `activity type added successfully` });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -112,11 +122,33 @@ export const upComingActivity = async (req, res) => {
 export const allActivities = async (req, res) => {
   const { type, subtype, category, placeholder } = req.body;
   try {
-    const sql = `SELECT type,subtype,category,placeholder
+    const sql = `SELECT id,type,subtype,category,placeholder
     FROM activitytype`;
     const params = [type, subtype, category, placeholder];
     const [rows] = await db.promise().query(sql, params);
     return res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteActivityType = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM  activityType WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "Activity Type Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Activity Type Not Found" });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
