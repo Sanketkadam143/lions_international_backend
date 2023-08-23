@@ -91,8 +91,9 @@ export const resetPassword = async (req, res) => {
 
     const [result] = await db
       .promise()
-      .query("UPDATE users SET password = ? WHERE id = ?", [
+      .query("UPDATE users SET password = ?,verified = ?, WHERE id = ?", [
         hashedPassword,
+        1,
         userId,
       ]);
     if (result.changedRows > 0) {

@@ -99,6 +99,9 @@ export const getClubAdminReport = async (req, res) => {
     }
     const sql2 = `SELECT * FROM reporting WHERE clubId=? AND month=?`;
     const [reports] = await db.promise().query(sql2, [clubId, month]);
+    if (reports.length === 0) {
+      return res.status(404).json({ message: "Reports not found" });
+    }
     const pdfPath = reports[0].pdfPath;
     return res.status(200).json({
       activityStar: data[0].activityStar,
