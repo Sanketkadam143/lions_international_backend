@@ -1,5 +1,5 @@
 import express from "express";
-import { zone,region,allClubs,userTitles,downloadMemberData,getDistrictData,clubsData ,clubDetails} from "../controllers/clubs.js";
+import { zone,region,allClubs,userTitles,downloadMemberData,getDistrictData,clubsData ,clubDetails,addClubAbout} from "../controllers/clubs.js";
 import auth from '../middleware/auth.js';
 
 
@@ -10,6 +10,7 @@ router.get('/region',auth,region);
 router.get('/allclubs',auth,allClubs);
 router.get('/clubs-data',auth,clubsData);
 router.get('/club-details',auth,clubDetails);
+router.post('/add-club-about',auth,addClubAbout);
 router.get('/titles',auth,userTitles);
 router.post('/download-member-data',auth,downloadMemberData);
 router.get('/districtdata',getDistrictData)
