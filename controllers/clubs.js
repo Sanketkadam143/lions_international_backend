@@ -1,4 +1,6 @@
 import connection from "../config/dbconnection.js";
+import dotenv from "dotenv";
+dotenv.config();
 const db = await connection();
 
 export const zone = async (req, res) => {
@@ -47,6 +49,34 @@ export const region = async (req, res) => {
   `;
     const [data] = await db.promise().query(sql, [regionName]);
     return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const clubsData = async (req, res) => {
+  try {
+    const sql =
+      `SELECT clubs.clubName, clubs.clubId, clubs.regionName, clubs.zoneName, COUNT(users.id) AS totalMembers
+      FROM clubs
+      LEFT JOIN users ON clubs.clubId = users.clubId
+      GROUP BY clubs.clubName, clubs.clubId, clubs.regionName, clubs.zoneName
+      ORDER BY clubs.clubName;
+      `;
+
+    const [data] = await db.promise().query(sql);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const clubDetails = async (req, res) => {
+  try {
+
+    return res.status(200).json([]);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -114,10 +144,20 @@ export const downloadMemberData = async (req, res) => {
 
 export const getDistrictData = async (req, res) => {
   try {
-    const sql = `
-      SELECT CONCAT(firstname,middlename,lastname) AS name,regionName, zoneName, clubName, clubId FROM users
-      ORDER BY regionName, zoneName, clubName
+    let sql;
+   if(process.env.DOMAIN_URL === "https://lions317b.org"){
+    sql = `
+    SELECT regionName, zoneName, clubName, clubId
+    FROM clubs
+    ORDER BY CAST(REGEXP_SUBSTR(regionName, '[0-9]+') AS SIGNED),zoneName,clubName;           
     `;
+   }else{
+    sql= `
+    SELECT regionName, zoneName, clubName, clubId FROM clubs
+    ORDER BY regionName, zoneName, clubName;
+  `;
+   }
+
     const [data] = await db.promise().query(sql);
     const districtData = [];
 

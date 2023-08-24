@@ -4,6 +4,8 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 import { uniqueName, writeFile } from "../utils/index.js";
+import dotenv from "dotenv";
+dotenv.config();
 const db = await connection();
 
 const __dirname = path.dirname(
@@ -135,20 +137,40 @@ export const addReport = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message:error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
 export const topClubsByAdmin = async (req, res) => {
   try {
+    // if (process.env.DOMAIN_URL.startsWith("https://lions317b.org")) {
+    //   const sql =
+    //     "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 16";
+    //   const [topClubs] = await db.promise().query(sql);
+    //   if (topClubs.length === 0) {
+    //     return res.status(404).json({ message: "Clubs not found" });
+    //   }
+
+    //   return res.status(200).json(topClubs);
+    // }
     const sql =
-      "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 16";
+      "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 10";
+
     const [topClubs] = await db.promise().query(sql);
     if (topClubs.length === 0) {
       return res.status(404).json({ message: "Clubs not found" });
     }
 
-    return res.status(200).json(topClubs);
+    const sql2 =
+      "SELECT clubName, activityStar FROM clubs ORDER BY activityStar DESC LIMIT 10";
+
+    const [topActivityClubs] = await db.promise().query(sql2);
+
+    if (topActivityClubs.length === 0) {
+      return res.status(404).json({ message: "Clubs not found" });
+    }
+
+    return res.status(200).json({topClubs,topActivityClubs});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
