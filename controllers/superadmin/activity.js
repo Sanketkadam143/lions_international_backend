@@ -141,7 +141,7 @@ export const deleteActivityType = async (req, res) => {
       return res.status(400).json({ message: "id param is required" });
     }
 
-    const sql = "DELETE FROM  activityType WHERE id = ?";
+    const sql = "DELETE FROM  activitytype WHERE id = ?";
     const [result] = await db.promise().query(sql, [id]);
 
     if (result.affectedRows > 0) {

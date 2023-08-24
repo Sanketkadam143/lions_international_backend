@@ -12,7 +12,7 @@ const __dirname = path.dirname(
 export const getClubDirector = async (req, res) => {
   try {
     const clubId = req.clubId;
-    const sql = "SELECT name AS fullName FROM cabinet_officers";
+    const sql = "SELECT name AS fullName FROM cabinet_officers ORDER BY fullName ASC";
     const data = await db.promise().query(sql, [clubId]);
     return res.status(200).json(data[0]);
   } catch (error) {
