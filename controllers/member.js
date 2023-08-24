@@ -207,7 +207,7 @@ export const MemberDirectory = async (req, res) => {
     }
 
     const sql = `
-      SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture
+      SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture,CONCAT(address1,' ', address2) AS address1
       FROM users
       ${whereClause}
       ORDER BY fullName

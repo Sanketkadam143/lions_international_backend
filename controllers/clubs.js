@@ -79,7 +79,7 @@ export const clubDetails = async (req, res) => {
       return res.status(400).json({ message: "Club Id is required" });
     }
     const sql = `
-    SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture, address1
+    SELECT CONCAT(firstName,' ', middleName,' ', lastName) AS fullName, title, phone, clubName, profilePicture, CONCAT(address1,' ', address2) AS address1
     FROM users
     WHERE clubId = ? 
     AND (
