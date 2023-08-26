@@ -457,14 +457,22 @@ export const regionActivities = async (req, res) => {
   const regionName = req.regionName;
 
   try {
-    const sql = "SELECT DISTINCT clubId from users where regionName = ?";
+    const sql = "SELECT DISTINCT clubId from clubs where regionName = ?";
     const [clubsData] = await db.promise().query(sql, [regionName]);
     const clubIds = clubsData.map((row) => row.clubId);
 
-    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(
-      ","
-    )})`;
-    const [activitiesData] = await db.promise().query(sql2);
+    const sql2 = `
+    SELECT
+      a.clubId, c.clubName, a.activityId, a.activityTitle, a.city, LEFT(a.date, 10) AS date, a.amount,
+      a.cabinetOfficers, a.lionHours, a.place, a.activityCategory, a.activityType,
+      a.activitySubType, a.description, a.mediaCoverage, a.placeholder AS beneficiaries
+    FROM
+      activities a
+    INNER JOIN
+      clubs c ON a.clubId = c.clubId
+    WHERE a.clubId IN (?)
+  `;
+    const [activitiesData] = await db.promise().query(sql2,[clubIds]);
 
     return res
       .status(200)
@@ -484,10 +492,18 @@ export const zoneActivities = async (req, res) => {
     const [clubsData] = await db.promise().query(sql, [regionName, zoneName]);
     const clubIds = clubsData.map((row) => row.clubId);
 
-    const sql2 = `SELECT * from activities where clubId IN (${clubIds.join(
-      ","
-    )})`;
-    const [activitiesData] = await db.promise().query(sql2);
+    const sql2 = `
+    SELECT
+      a.clubId, c.clubName, a.activityId, a.activityTitle, a.city, LEFT(a.date, 10) AS date, a.amount,
+      a.cabinetOfficers, a.lionHours, a.place, a.activityCategory, a.activityType,
+      a.activitySubType, a.description, a.mediaCoverage, a.placeholder AS beneficiaries
+    FROM
+      activities a
+    INNER JOIN
+      clubs c ON a.clubId = c.clubId
+    WHERE a.clubId IN (?)
+  `;
+    const [activitiesData] = await db.promise().query(sql2,[clubIds]);
 
     return res
       .status(200)
