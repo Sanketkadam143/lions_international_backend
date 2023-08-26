@@ -197,7 +197,7 @@ export const downloadMemberData = async (req, res) => {
 export const getDistrictData = async (req, res) => {
   try {
     let sql;
-    if (process.env.DOMAIN_URL === "https://lions317b.org") {
+    if (process.env.DOMAIN_URL.includes === "lions317b.org") {
       sql = `
     SELECT regionName, zoneName, clubName, clubId
     FROM clubs

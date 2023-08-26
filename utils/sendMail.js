@@ -10,9 +10,9 @@ const DOMAIN_URL = process.env.DOMAIN_URL;
 
 export default async function sendMail(userName, email, resetLink) {
   let resetPasswordMail = {};
-  if (DOMAIN_URL.startsWith("https://lions317f.org/")) {
+  if (DOMAIN_URL.includes("lions317f.org")) {
     resetPasswordMail = bangaloreResetPassMail(EMAIL_USERNAME,email,resetLink,userName);
-  } else if (DOMAIN_URL.startsWith("https://lions317b.org/")) {
+  } else if (DOMAIN_URL.includes("lions317b.org")) {
     resetPasswordMail = goaResetPassMail(EMAIL_USERNAME,email,resetLink,userName);
   }
   try {

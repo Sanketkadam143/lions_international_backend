@@ -143,7 +143,7 @@ export const addReport = async (req, res) => {
 
 export const topClubsByAdmin = async (req, res) => {
   try {
-    if (process.env.DOMAIN_URL.startsWith("https://lions317f.org")) {
+    if (process.env.DOMAIN_URL.includes("lions317f.org")) {
       const sql =
         "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 16";
       const [topClubs] = await db.promise().query(sql);

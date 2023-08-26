@@ -67,7 +67,7 @@ export const topNews = async (req, res) => {
     const totalCount = countData[0][0].count;
 
     // change verfied to 1 when testing is done
-    const sql = `SELECT newsId,newsTitle ,description ,image,date FROM news WHERE verified=0 ORDER BY date DESC LIMIT ${rowsPerPage} OFFSET ${offset}`;
+    const sql = `SELECT newsId,newsTitle ,description , newsPaperLink,image,date FROM news WHERE verified=0 ORDER BY date DESC LIMIT ${rowsPerPage} OFFSET ${offset}`;
     const data = await db.promise().query(sql);
 
     return res.status(200).json({
