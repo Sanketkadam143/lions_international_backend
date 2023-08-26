@@ -12,7 +12,8 @@ const __dirname = path.dirname(
 export const getClubDirector = async (req, res) => {
   try {
     const clubId = req.clubId;
-    const sql = "SELECT name AS fullName FROM cabinet_officers ORDER BY fullName ASC";
+    const sql =
+      "SELECT name AS fullName FROM cabinet_officers ORDER BY fullName ASC";
     const data = await db.promise().query(sql, [clubId]);
     return res.status(200).json(data[0]);
   } catch (error) {
@@ -104,25 +105,13 @@ export const deleteActivity = async (req, res) => {
   const { activityId } = req.query;
   const clubId = req.clubId;
   try {
-    const sql2 = `SELECT activityCategory,placeholder FROM activities WHERE activityId=?`;
+    const sql2 = `SELECT activityStars FROM activities WHERE activityId=?`;
     const [activityCategoryData] = await db.promise().query(sql2, [activityId]);
-
-    const [rows] = await db
-      .promise()
-      .query("SELECT star FROM activitytype WHERE category LIKE ?", [
-        `%${activityCategoryData[0].activityCategory}%`,
-      ]);
-
-    const star = rows[0]?.star;
-    let activityStars = star * (activityCategoryData[0].placeholder || 1);
-
-    // custom change in activity points for lions bangalore
-    if (
-      process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
-      process.env.DOMAIN_URL.includes("lions317f.org")
-    ) {
-      activityStars = 1;
+    if (activityCategoryData.length === 0) {
+      return res.status(404).json({ message: "Activity not found" });
     }
+
+    const activityStars = activityCategoryData[0]?.activityStars;
 
     await db
       .promise()
@@ -137,7 +126,7 @@ export const deleteActivity = async (req, res) => {
     if (result.affectedRows === 1) {
       return res
         .status(200)
-        .json({ successMessage: "Activity deleted successfully" });
+        .json({ successMessage: `Activity deleted successfully with points ${activityStars}`});
     } else {
       return res.status(404).json({ message: "Activity not found" });
     }
@@ -164,7 +153,7 @@ export const editActivity = async (req, res) => {
     placeholder,
     activityId,
   } = req.body;
-
+  const clubId = req.clubId;
   try {
     let image_path = "";
     if (req.files?.[0]) {
@@ -180,36 +169,36 @@ export const editActivity = async (req, res) => {
       image_path2 = `/images/activity/${fileName}`;
       const folder = path.resolve(__dirname, "..") + image_path2;
       await writeFile(folder, req.files[1].buffer);
-
     }
 
-    //pending logic for lions goa
+    const sql2 = `SELECT activityStars FROM activities WHERE activityId=?`;
+    const [activityCategoryData] = await db.promise().query(sql2, [activityId]);
+    if (activityCategoryData.length === 0) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
 
-    // const [rows] = await db
-    //   .promise()
-    //   .query("SELECT star FROM activitytype WHERE category LIKE ?", [
-    //     `%${activityCategory}%`,
-    //   ]);
+    const prevActivityStars = activityCategoryData[0]?.activityStars;
 
-    // const star = rows[0]?.star;
-    // let activityStars = star * (placeholder || 1);
+    const sql3 = `
+    SELECT star
+    FROM activitytype
+    WHERE TRIM(category) LIKE ? AND TRIM(subtype) LIKE ? AND TRIM(type) LIKE ?
+  `;
 
-    // custom change in activity points for lions bangalore
-    // let activityStars = 1;
-    // if (
-    //   process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
-    //   process.env.DOMAIN_URL.includes("lions317f.org")
-    // ) {
-    //   activityStars = 1;
-    // }
+    const [rows] = await db
+      .promise()
+      .query(sql3, [
+        `%${activityCategory.trim()}%`,
+        `%${activitySubType.trim()}%`,
+        `%${activityType.trim()}%`,
+      ]);
 
-    // await db
-    //   .promise()
-    //   .query(
-    //     "UPDATE clubs SET activitystar = activitystar + ? WHERE clubId = ?;",
-    //     [activityStars, clubId]
-    //   );
-    // Check if image_path or image_path2 is present, and construct the update query accordingly
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Activity star type not found" });
+    }
+
+    const activityStars = rows[0]?.star;
+    
     let updateFields = {
       amount,
       activityTitle,
@@ -223,6 +212,7 @@ export const editActivity = async (req, res) => {
       activitySubType,
       activityCategory,
       place,
+      activityStars,
       placeholder,
     };
 
@@ -234,6 +224,16 @@ export const editActivity = async (req, res) => {
       updateFields.image_path2 = image_path2;
     }
 
+    await db.promise().query(
+      `
+      UPDATE clubs
+      SET activitystar = activitystar - ? + ?
+      WHERE clubId = ?;
+      `,
+      [prevActivityStars, activityStars, clubId]
+    );
+    
+
     // Update the activity with the given activityId
     await db
       .promise()
@@ -244,7 +244,7 @@ export const editActivity = async (req, res) => {
 
     return res
       .status(200)
-      .json({ successMessage: `Activity ${activityId} updated successfully` });
+      .json({ successMessage: `Activity ${activityId} updated successfully with points ${activityStars}` });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -283,22 +283,35 @@ export const addActivity = async (req, res) => {
       const folder = path.resolve(__dirname, "..") + image_path2;
       await writeFile(folder, req.files[1].buffer);
     }
+    const sql = `
+    SELECT star
+    FROM activitytype
+    WHERE TRIM(category) LIKE ? AND TRIM(subtype) LIKE ? AND TRIM(type) LIKE ?
+  `;
+
     const [rows] = await db
       .promise()
-      .query("SELECT star FROM activitytype WHERE category LIKE ?", [
-        `%${activityCategory}%`,
+      .query(sql, [
+        `%${activityCategory.trim()}%`,
+        `%${activitySubType.trim()}%`,
+        `%${activityType.trim()}%`,
       ]);
 
-    const star = rows[0]?.star;
-    let activityStars = star * (placeholder || 1);
-
-    // custom change in activity points for lions bangalore
-    if (
-      process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
-      process.env.DOMAIN_URL.includes("lions317f.org")
-    ) {
-      activityStars = 1;
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Activity star type not found" });
     }
+
+    const activityStars = rows[0]?.star;
+
+    // let activityStars = star * (placeholder || 1);
+
+    // // custom change in activity points for lions bangalore
+    // if (
+    //   process.env.DOMAIN_URL.includes("lionsdistrict317f.org") ||
+    //   process.env.DOMAIN_URL.includes("lions317f.org")
+    // ) {
+    //   activityStars = 1;
+    // }
 
     await db
       .promise()
