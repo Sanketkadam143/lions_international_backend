@@ -94,12 +94,12 @@ export const clubDetails = async (req, res) => {
 
     const [data] = await db.promise().query(sql, [clubId]);
 
-    const sql2 = `SELECT clubName,clubId,about FROM clubs WHERE clubId = ?`
+    const sql2 = `SELECT clubName,clubId,about FROM clubs WHERE clubId = ?`;
     const [clubName] = await db.promise().query(sql2, [clubId]);
-    if(clubName.length === 0){
+    if (clubName.length === 0) {
       return res.status(404).json({ message: "Club not found" });
     }
-    const clubInfo = {pst:data,club:clubName[0]}
+    const clubInfo = { pst: data, club: clubName[0] };
     return res.status(200).json(clubInfo);
   } catch (error) {
     console.log(error);
@@ -107,11 +107,10 @@ export const clubDetails = async (req, res) => {
   }
 };
 
-
 export const addClubAbout = async (req, res) => {
-  const clubId = req.clubId;  
-  const {about} = req.body;
-  
+  const clubId = req.clubId;
+  const { about } = req.body;
+
   try {
     if (!clubId) {
       return res.status(400).json({ message: "Club Id is required" });
@@ -122,13 +121,14 @@ export const addClubAbout = async (req, res) => {
     const sql = `
     UPDATE clubs SET about = ? WHERE clubId = ?;
   `;
-    const [data] = await db.promise().query(sql, [about,clubId]);
-    if(data.affectedRows === 0){
+    const [data] = await db.promise().query(sql, [about, clubId]);
+    if (data.affectedRows === 0) {
       return res.status(404).json({ message: "About not updated" });
     }
 
-    return res.status(200).json({successMessage:"About updated successfully"});
-   
+    return res
+      .status(200)
+      .json({ successMessage: "About updated successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -197,7 +197,7 @@ export const downloadMemberData = async (req, res) => {
 export const getDistrictData = async (req, res) => {
   try {
     let sql;
-    if (process.env.DOMAIN_URL.includes === "lions317b.org") {
+    if (process.env.DOMAIN_URL.includes("lions317b.org")) {
       sql = `
     SELECT regionName, zoneName, clubName, clubId
     FROM clubs
@@ -207,7 +207,7 @@ export const getDistrictData = async (req, res) => {
       sql = `
     SELECT regionName, zoneName, clubName, clubId FROM clubs
     ORDER BY regionName, zoneName, clubName;
-  `;
+    `;
     }
 
     const [data] = await db.promise().query(sql);

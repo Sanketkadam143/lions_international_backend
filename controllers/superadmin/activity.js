@@ -120,18 +120,52 @@ export const upComingActivity = async (req, res) => {
 };
 
 export const allActivities = async (req, res) => {
-  const { type, subtype, category, placeholder } = req.body;
+  
   try {
-    const sql = `SELECT id,type,subtype,category,placeholder
+    const sql = `SELECT id,type,subtype,category,placeholder,star
     FROM activitytype`;
-    const params = [type, subtype, category, placeholder];
-    const [rows] = await db.promise().query(sql, params);
+   
+    const [rows] = await db.promise().query(sql);
+    if (rows.length === 0) {
+      return res.status(400).json({ message: "No Activity Type Found" });
+    }
     return res.status(200).json(rows);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const downloadAllActivity = async (req, res) => {
+  try {
+   
+    const sql = `
+      SELECT
+        a.clubId, c.clubName, a.activityId, a.activityTitle, a.city, LEFT(a.date, 10) AS date, a.amount,
+        a.cabinetOfficers, a.lionHours, a.place, a.activityCategory, a.activityType,
+        a.activitySubType, a.description, a.mediaCoverage, a.placeholder AS beneficiaries
+      FROM
+        activities a
+      INNER JOIN
+        clubs c ON a.clubId = c.clubId
+    `;
+
+    
+    const [rows] = await db.promise().query(sql);
+
+   
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+
+    
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 
 export const deleteActivityType = async (req, res) => {
   try {
