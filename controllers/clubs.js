@@ -185,6 +185,11 @@ export const downloadMemberData = async (req, res) => {
       sql += `AND title IN (?)`;
       [payload] = await db.promise().query(sql, [clubIds, selectedTitles]);
     }
+
+    if(payload.length === 0){
+      return res.status(404).json({message:"No data found for given titles and clubs"})
+    }
+    
     return res
       .status(200)
       .json({ payload, successMessage: "Data Fetched Successfully" });
