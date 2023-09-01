@@ -49,6 +49,18 @@ export const getClub = async (req, res) => {
   }
 };
 
+export const downloadClubRanking = async (req, res) => {
+  try {
+    const sql =
+    "SELECT clubId, clubName, adminstars, activityStar FROM clubs ORDER BY adminstars DESC";
+    const [rows] = await db.promise().query(sql);
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export const getClubActivities = async (req, res) => {
   const { clubId } = req.query;
 
@@ -105,7 +117,7 @@ export const getClubAdminReport = async (req, res) => {
     const pdfPath = reports[0].pdfPath;
     return res.status(200).json({
       activityStar: data[0].activityStar,
-      adminstars: data[0].adminstars,
+      adminstars: data[0][`month${month}`],
       clubName: data[0].clubName,
       pdfPath: pdfPath,
       reports: reports,
@@ -122,13 +134,13 @@ export const getAllAdminReport = async (req, res) => {
     if (!month) {
       return res.status(400).json({ message: "Month is required" });
     }
-    const sql = `SELECT month${month}, activityStar, adminstars,clubName,clubId FROM clubs ORDER BY clubName `;
+    const sql = `SELECT month${month} AS adminstars, activityStar, clubName,clubId FROM clubs ORDER BY clubName `;
     const [data] = await db.promise().query(sql);
     const reportedClubs = [];
     const nonReportedClubs = [];
 
     data.forEach((club) => {
-      if (club[`month${month}`] === 0) {
+      if (club.adminstars === 0) {
         nonReportedClubs.push(club);
       } else {
         reportedClubs.push(club);
@@ -170,13 +182,13 @@ export const clubSummary = async (req, res) => {
 
   try {
     const countQuery = `
-      SELECT COUNT(*) AS count FROM clubs WHERE clubId = ? AND (month1 = 1 OR month2 = 1 OR month3 = 1 OR month4 = 1 OR month5 = 1 OR month6 = 1 OR month7 = 1 OR month8 = 1 OR month9 = 1 OR month10 = 1 OR month11 = 1 OR month12 = 1);
+      SELECT adminstars FROM clubs WHERE clubId = ?;
     `;
     const activityCountQuery = `
       SELECT COUNT(*) AS activityCount FROM activities WHERE clubId = ?;
     `;
     const totalExpenseQuery = `
-      SELECT SUM(amount) AS totalExpense FROM expenses WHERE clubId = ? AND type = 'expense';
+      SELECT SUM(amount) AS totalExpense FROM activities WHERE clubId = ?;
     `;
     const clubInfoQuery = `
       SELECT clubId, clubName, lastupdated FROM clubs WHERE clubId = ?;
@@ -201,7 +213,7 @@ export const clubSummary = async (req, res) => {
       .query(totalMembersQuery, [clubId]);
     const totalNewsResult = await db.promise().query(totalNewsQuery, [clubId]);
 
-    const adminPoint = countResult[0][0].count;
+    const adminPoint = countResult[0][0].adminstars;
     const activityCount = activityCountResult[0][0].activityCount;
     const totalExpense = totalExpenseResult[0][0].totalExpense;
     const clubInfo = clubInfoResult[0][0];

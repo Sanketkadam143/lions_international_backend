@@ -488,7 +488,7 @@ export const zoneActivities = async (req, res) => {
   const zoneName = req.zoneName;
   try {
     const sql =
-      "SELECT DISTINCT clubId from users where regionName = ? and zoneName = ?";
+      "SELECT DISTINCT clubId from clubs where regionName = ? and zoneName = ?";
     const [clubsData] = await db.promise().query(sql, [regionName, zoneName]);
     const clubIds = clubsData.map((row) => row.clubId);
 

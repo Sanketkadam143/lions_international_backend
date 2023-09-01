@@ -7,18 +7,13 @@ const JWTKEY = process.env.JWTKEY;
 
 const auth = async (req, res, next) => {
   try {
-
     // middleware for forget password
-    
+
     if (req.query?.resetToken) {
       const token = req.query?.resetToken;
       const decodedData = jwt.verify(token, JWTKEY);
       req.userId = decodedData?.id;
       req.email = decodedData?.email;
-
-      if (decodedData?.exp < Date.now() / 1000) {
-        return res.status(401).send({ message: "Token had expired" });
-      }
 
       next();
     } else {
@@ -38,6 +33,11 @@ const auth = async (req, res, next) => {
     }
   } catch (error) {
     console.log(error);
+
+    if (req.query?.resetToken) {
+      return res.status(401).send({ message: "Link had expired" });
+    }
+
     return res.status(401).send({ message: "unauthorized" });
   }
 };
