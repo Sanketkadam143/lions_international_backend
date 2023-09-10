@@ -53,12 +53,7 @@ export const AddActivity = async (req, res) => {
   star = star ? star : 1;
 
   try {
-    if (
-      !type ||
-      !subtype ||
-      !category ||
-      !placeholder
-    ) {
+    if (!type || !subtype || !category || !placeholder) {
       return res.status(400).json({ message: "Please fill all the fields" });
     }
     const sql =
@@ -77,15 +72,40 @@ export const AddActivity = async (req, res) => {
 };
 export const stats = async (req, res) => {
   try {
-    const [result] = await db.promise().query(`
-      SELECT
-        (SELECT COUNT(*) FROM activities) AS totalActivities,
-        (SELECT COUNT(*) FROM clubs) AS totalClubs,
-        (SELECT COALESCE(SUM(amount), 0) FROM activities) AS totalExpenses,
-        (SELECT COALESCE(SUM(placeholder), 0) FROM activities) AS beneficiaryServed,
-        (SELECT COALESCE(SUM(lionHours), 0) FROM activities) AS totalLionHours,
-        (SELECT COUNT(*) FROM users) AS totalMembers;
-    `);
+    const sql = `
+    SELECT
+      (SELECT COUNT(*) FROM activities) AS totalActivities,
+      (SELECT COUNT(*) FROM clubs) AS totalClubs,
+      (SELECT COALESCE(SUM(amount), 0) FROM activities) AS totalExpenses,
+      (SELECT COALESCE(SUM(placeholder), 0) FROM activities) AS beneficiaryServed,
+      (SELECT COALESCE(SUM(lionHours), 0) FROM activities) AS totalLionHours,
+      (SELECT COUNT(*) FROM users) AS totalMembers;
+
+  `;
+
+    const [result] = await db.promise().query(sql);
+
+    const sql2 = `
+    SELECT activityType, COUNT(*) AS typeCount
+    FROM activities
+    GROUP BY activityType;`;
+
+    const [activityTypeCount] = await db.promise().query(sql2);
+
+    const sql3 = `
+    SELECT  activitySubType AS activityType, COUNT(*) AS typeCount
+    FROM activities
+    GROUP BY  activitySubType;
+    `;
+
+    const [activitySubTypeCount] = await db.promise().query(sql3);
+
+    const sql4 = `
+    SELECT  activityCategory AS activityType, COUNT(*) AS typeCount
+    FROM activities
+    GROUP BY  activityCategory;
+    `;
+    const [activityCategoryCount] = await db.promise().query(sql4);
 
     return res.status(200).json({
       totalActivities: result[0].totalActivities,
@@ -94,6 +114,9 @@ export const stats = async (req, res) => {
       beneficiaryServed: result[0].beneficiaryServed,
       totalLionHours: result[0].totalLionHours,
       totalMembers: result[0].totalMembers,
+      activityTypeCount,
+      activitySubTypeCount,
+      activityCategoryCount,
     });
   } catch (error) {
     console.log(error);
@@ -120,11 +143,10 @@ export const upComingActivity = async (req, res) => {
 };
 
 export const allActivities = async (req, res) => {
-  
   try {
     const sql = `SELECT id,type,subtype,category,placeholder,star
     FROM activitytype`;
-   
+
     const [rows] = await db.promise().query(sql);
     if (rows.length === 0) {
       return res.status(400).json({ message: "No Activity Type Found" });
@@ -138,7 +160,6 @@ export const allActivities = async (req, res) => {
 
 export const downloadAllActivity = async (req, res) => {
   try {
-   
     const sql = `
       SELECT
         a.clubId, c.clubName, a.activityId, a.activityTitle, a.city, LEFT(a.date, 10) AS date, a.amount,
@@ -150,15 +171,12 @@ export const downloadAllActivity = async (req, res) => {
         clubs c ON a.clubId = c.clubId
     `;
 
-    
     const [rows] = await db.promise().query(sql);
 
-   
     if (rows.length === 0) {
       return res.status(404).json({ message: "No activities found" });
     }
 
-    
     return res.status(200).json(rows);
   } catch (error) {
     console.error(error);
@@ -166,11 +184,10 @@ export const downloadAllActivity = async (req, res) => {
   }
 };
 
-
 export const deleteActivityType = async (req, res) => {
   try {
     const { id } = req.params;
-  
+
     if (!id) {
       return res.status(400).json({ message: "id param is required" });
     }
@@ -179,7 +196,9 @@ export const deleteActivityType = async (req, res) => {
     const [result] = await db.promise().query(sql, [id]);
 
     if (result.affectedRows > 0) {
-      return res.status(200).json({ successMessage: "Activity Type Deleted Successfully" });
+      return res
+        .status(200)
+        .json({ successMessage: "Activity Type Deleted Successfully" });
     } else {
       return res.status(400).json({ message: "Activity Type Not Found" });
     }

@@ -8,11 +8,11 @@ export const getMember = async (req, res) => {
     const [rows] = await db.promise().query(sql);
 
     const titleRank = {
-      "president": 1,
+      president: 1,
       "vice president": 2,
-      "secretary": 3,
-      "treasurer": 4,
-      "director": 5,
+      secretary: 3,
+      treasurer: 4,
+      director: 5,
     };
 
     function getRank(title) {
@@ -24,21 +24,21 @@ export const getMember = async (req, res) => {
       // If no keyword is found, assign a high rank
       return Infinity;
     }
-    
+
     const sortedUsers = rows.sort((a, b) => {
       if (a.clubId !== b.clubId) {
         return a.clubId - b.clubId;
       }
-    
+
       const titleA = a.title.toLowerCase();
       const titleB = b.title.toLowerCase();
-    
+
       const rankA = getRank(titleA);
       const rankB = getRank(titleB);
-    
+
       return rankA - rankB;
     });
-       
+
     return res.status(200).json(sortedUsers);
   } catch (error) {
     console.log(error);
@@ -48,7 +48,8 @@ export const getMember = async (req, res) => {
 
 export const getRegions = async (req, res) => {
   try {
-    const sql = "SELECT DISTINCT regionName FROM clubs AS regions ORDER BY regionName ASC;";
+    const sql =
+      "SELECT DISTINCT regionName FROM clubs AS regions ORDER BY regionName ASC;";
     const data = await db.promise().query(sql);
 
     return res.status(200).json(data[0]);
@@ -61,7 +62,8 @@ export const getRegions = async (req, res) => {
 export const getZones = async (req, res) => {
   const regionName = req.query.region;
   try {
-    const sql = "SELECT DISTINCT zoneName FROM clubs WHERE regionName =? ORDER BY zoneName ASC;";
+    const sql =
+      "SELECT DISTINCT zoneName FROM clubs WHERE regionName =? ORDER BY zoneName ASC;";
     const data = await db.promise().query(sql, [regionName]);
 
     return res.status(200).json(data[0]);
@@ -140,10 +142,8 @@ export const addMember = async (req, res) => {
     !zoneName ||
     !firstName ||
     !lastName ||
-    !email ||
     !id ||
     !title ||
-    !phone ||
     !gender
   ) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -182,6 +182,126 @@ export const addMember = async (req, res) => {
     return res
       .status(200)
       .json({ successMessage: "Member added successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const updateMemberInfo = async (req, res) => {
+
+  const {
+      id, 
+    clubName,
+    clubId,
+    regionName,
+    title,
+    zoneName,
+    firstName,
+    middleName,
+    lastName,
+    spouseName,
+    dob,
+    email,
+    phone,
+    gender,
+    occupation,
+    postalCode,
+    state,
+    city,
+    address1,
+    address2,
+  } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: "Missing memberId" });
+  }
+    // Check if required fields are present
+    if (
+      !clubId ||
+      !clubName ||
+      !regionName ||
+      !zoneName ||
+      !firstName ||
+      !lastName ||
+      !id ||
+      title.length===0 ||
+      !gender
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+  try {
+  
+    const titles = title.join("-");
+
+   // check if member exists
+    const sql1 = "SELECT id FROM users WHERE id = ?;";
+    const [rows] = await db.promise().query(sql1, [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    const sql =
+      "UPDATE users SET clubName=?, clubId=?, regionName=?, title=?, zoneName=?, firstName=?, middleName=?, lastName=?, spouseName=?, dob=?, email=?, phone=?, gender=?, occupation=?, postalCode=?, state=?, city=?, address1=?, address2=? WHERE id=?";
+    const values = [
+      clubName,
+      clubId,
+      regionName,
+      titles,
+      zoneName,
+      firstName,
+      middleName,
+      lastName,
+      spouseName,
+      dob,
+      email,
+      phone,
+      gender,
+      occupation,
+      postalCode,
+      state,
+      city,
+      address1,
+      address2,
+      id,
+    ];
+
+    const [data ]= await db.promise().query(sql, values);
+    
+    if (data.affectedRows === 0) {
+      return res.status(500).json({ message: "Something went wrong" });
+    }
+    return res
+      .status(200)
+      .json({ successMessage: "Member information updated successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const memberDetails = async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id ) {
+      return res.status(400).json({ message: "Member id not provided" });
+    }
+    const sql =
+      `SELECT clubName, clubId, regionName, title, zoneName, firstName, middleName, lastName, id, spouseName, dob, email, phone, gender, occupation, postalCode, state, city, address1, address2
+      FROM users
+      WHERE id = ?;
+      `;
+    const [data] = await db.promise().query(sql, [id]);
+    if (data[0].length === 0) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    const memberDetails = data[0];
+    memberDetails.title = memberDetails.title.split("-").map((title) => title.trim());
+
+    return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

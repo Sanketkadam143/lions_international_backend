@@ -11,7 +11,6 @@ export const addClub = async (req, res) => {
       });
     }
 
-    // Check if the clubId already exists in the database
     const checkSql = "SELECT clubId FROM clubs WHERE clubId = ?";
     const [rows] = await db.promise().query(checkSql, [clubId]);
 
@@ -23,7 +22,9 @@ export const addClub = async (req, res) => {
 
     const sql =
       "INSERT INTO clubs (clubName, clubId, regionName, zoneName) VALUES (?, ?, ?, ?)";
-    await db.promise().query(sql, [clubName.toUpperCase(), clubId, regionName, zoneName]);
+    await db
+      .promise()
+      .query(sql, [clubName.toUpperCase(), clubId, regionName, zoneName]);
 
     return res.status(200).json({
       successMessage: "Club added successfully",
@@ -36,6 +37,83 @@ export const addClub = async (req, res) => {
   }
 };
 
+export const editClubInfo = async (req, res) => {
+  const { clubId } = req.query;
+  try {
+    if (!clubId) {
+      return res.status(400).json({
+        message: "club id is required",
+      });
+    }
+
+    const sql =
+      "SELECT clubId, clubName, regionName, zoneName FROM clubs WHERE clubId=?";
+    const [rows] = await db.promise().query(sql, [clubId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+
+    return res.status(200).json(rows[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const updateClub = async (req, res) => {
+  const { clubName, clubId, regionName, zoneName } = req.body;
+
+  try {
+    if (!clubName || !clubId || !regionName || !zoneName) {
+      return res.status(400).json({
+        message: "Please fill all the fields",
+      });
+    }
+
+    const checkSql = "SELECT clubId FROM clubs WHERE clubId = ?";
+    const [checkRows] = await db.promise().query(checkSql, [clubId]);
+
+    if (checkRows.length === 0) {
+      return res.status(400).json({
+        message: "Club ID does not exist",
+      });
+    }
+
+    const updateSql =
+      "UPDATE clubs SET clubName = ?, regionName = ?, zoneName = ? WHERE clubId = ?";
+    const [data] = await db
+      .promise()
+      .query(updateSql, [clubName.toUpperCase(), regionName, zoneName, clubId]);
+
+    if (data.affectedRows === 0) {
+      return res.status(404).json({ message: "Club not updated" });
+    }
+
+    // Update the club information in the users table
+    const updateUsersSql =
+      "UPDATE users SET clubName = ?, regionName = ?, zoneName = ? WHERE clubId = ?";
+
+    await db
+      .promise()
+      .query(updateUsersSql, [
+        clubName.toUpperCase(),
+        regionName,
+        zoneName,
+        clubId,
+      ]);
+
+    return res.status(200).json({
+      successMessage: "Club information updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
 
 export const getClub = async (req, res) => {
   try {
@@ -52,7 +130,7 @@ export const getClub = async (req, res) => {
 export const downloadClubRanking = async (req, res) => {
   try {
     const sql =
-    "SELECT clubId, clubName, adminstars, activityStar FROM clubs ORDER BY adminstars DESC";
+      "SELECT clubId, clubName, adminstars, activityStar FROM clubs ORDER BY adminstars DESC";
     const [rows] = await db.promise().query(sql);
     return res.status(200).json(rows);
   } catch (error) {
