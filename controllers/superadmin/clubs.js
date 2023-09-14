@@ -1,4 +1,5 @@
 import connection from "../../config/dbconnection.js";
+import { getCurrentIndianTime } from "../../utils/index.js";
 const db = await connection();
 
 export const addClub = async (req, res) => {
@@ -306,6 +307,59 @@ export const clubSummary = async (req, res) => {
       totalMembers,
       totalNews,
     });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const updateClubPoints = async (req, res) => {
+  let { clubId, month, points } = req.body;
+  const { userId } = req;
+  try {
+    if (!clubId) {
+      return res.status(400).json({ message: "clubId is required" });
+    }
+    if (!month) {
+      return res.status(400).json({ message: "month is required" });
+    }
+    if (!points) {
+      return res.status(400).json({ message: "points is required" });
+    }
+    if (month > 12 || month < 1) {
+      return res
+        .status(400)
+        .json({ message: "month should be between 1 to 12" });
+    }
+
+    points = points.toString().replace(/[+-]/g, "");
+    points = parseInt(points);
+    const time = getCurrentIndianTime();
+
+    const sql = `select month${month} from clubs where clubId = ?`;
+    const [rows] = await db.promise().query(sql, [clubId]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Club not found" });
+    }
+    if (rows[0][`month${month}`] < points) {
+      return res
+        .status(400)
+        .json({ message: "You cannot debit more points than claimed points" });
+    }
+    const sql2 = `UPDATE clubs SET month${month} = month${month}-?,adminstars=adminstars-?,lasteditedon = ?, updateby = ? WHERE clubId = ?`;
+
+    const [data] = await db
+      .promise()
+      .query(sql2, [points, points, time, userId, clubId]);
+
+    if (data.affectedRows === 0) {
+      return res.status(404).json({ message: "Club Points not updated" });
+    }
+    
+    return res
+      .status(200)
+      .json({ successMessage: "Club Points updated successfully" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
