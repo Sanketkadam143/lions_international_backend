@@ -10,15 +10,27 @@ export const uniqueName = (name) => {
   return filename;
 };
 
-export const writeFile = async (path,buffer)=>{
+export const writeFile = async (path, buffer) => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(path, buffer, (err) => {
+      if (err) {
+        console.log(err, "error in writing file");
+        reject(err);
+      }
+      resolve();
+    });
+  });
+};
 
-    return new Promise((resolve,reject)=>{
-        fs.writeFile(path, buffer, (err) => {
-        if (err) {
-            console.log(err,"error in writing file");
-            reject(err)
-        }
-        resolve()
-        });
-    })
-}
+export const getCurrentIndianTime = () => {
+  try {
+    const istTime = new Date().toLocaleString(undefined, {
+      timeZone: "Asia/Kolkata",
+    });
+   // const currentTime = new Date(istTime);
+    return istTime;
+  } catch (error) {
+    console.error("Error fetching current time:", error);
+    return null;
+  }
+};
