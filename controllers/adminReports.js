@@ -3,7 +3,7 @@ import { calculatePoints } from "../utils/calculatePoints.js";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
-import { uniqueName, writeFile } from "../utils/index.js";
+import { canReport, uniqueName, writeFile } from "../utils/index.js";
 import dotenv from "dotenv";
 dotenv.config();
 const db = await connection();
@@ -16,6 +16,21 @@ export const getReports = async (req, res) => {
   const { month } = req.query;
   const clubId = req.clubId;
   try {
+    if (!month) {
+      return res.status(400).json({ message: "Please select a month" });
+    }
+    
+    if (month < 0 || month > 12) {
+      return res.status(400).json({ message: "Please select a valid month" });
+    }
+    
+    if (!canReport(month)) {
+      return res
+        .status(400)
+        .json({ message: "You cannot report for this month" });
+    }
+
+
     const [rows] = await db
       .promise()
       .query(`SELECT month${month} FROM clubs WHERE clubId = ?;`, [clubId]);
@@ -170,7 +185,7 @@ export const topClubsByAdmin = async (req, res) => {
       return res.status(404).json({ message: "Clubs not found" });
     }
 
-    return res.status(200).json({topClubs,topActivityClubs});
+    return res.status(200).json({ topClubs, topActivityClubs });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
