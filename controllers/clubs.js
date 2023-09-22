@@ -148,6 +148,17 @@ export const allClubs = async (req, res) => {
   }
 };
 
+export const clubList = async (req, res) => {
+  try {
+    const sql = "SELECT clubName,clubId FROM clubs ORDER BY clubName";
+    const [data] = await db.promise().query(sql);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export const userTitles = async (req, res) => {
   try {
     const sql = "SELECT DISTINCT title FROM users";
@@ -186,10 +197,12 @@ export const downloadMemberData = async (req, res) => {
       [payload] = await db.promise().query(sql, [clubIds, selectedTitles]);
     }
 
-    if(payload.length === 0){
-      return res.status(404).json({message:"No data found for given titles and clubs"})
+    if (payload.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No data found for given titles and clubs" });
     }
-    
+
     return res
       .status(200)
       .json({ payload, successMessage: "Data Fetched Successfully" });

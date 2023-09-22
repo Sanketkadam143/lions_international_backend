@@ -369,14 +369,31 @@ export const getActivityStats = async (req, res) => {
 };
 export const events = async (req, res) => {
   try {
-    const { page = 1, limit = 9 } = req.query;
+    let { page = 1, limit = 9 ,clubId,type,from,to} = req.query;
     const offset = (page - 1) * limit;
+    if(type){
+      type=type.trim();
+    }
+    let whereClause = "";
+
+    if (clubId) {
+      whereClause = `AND a.clubId = ${clubId}`;
+    }
+    if(type){
+        whereClause += ` AND TRIM(a.activityType) = '${type}'`;
+    }
+    if(from){
+        whereClause += ` AND a.date >= '${from}'`;
+    }
+    if(to){
+        whereClause += ` AND a.date <= '${to}'`;
+    }
 
     const upcomingSql = `
     SELECT a.activityId, a.activityTitle, a.date, a.description, a.image_path, a.image_path2, a.clubId, a.place, a.activityCategory, a.activityType, a.cabinetOfficers, c.clubName
     FROM activities a
     JOIN clubs c ON a.clubId = c.clubId
-    WHERE a.date >= CURRENT_DATE() 
+    WHERE a.date >= CURRENT_DATE() ${whereClause}
     ORDER BY a.date ASC 
     LIMIT ${limit} OFFSET ${offset}
   `;
@@ -385,7 +402,7 @@ export const events = async (req, res) => {
   SELECT a.activityId, a.activityTitle, a.date, a.description, a.image_path, a.image_path2, a.clubId, a.place, a.activityCategory, a.activityType, a.cabinetOfficers, c.clubName
   FROM activities a
   JOIN clubs c ON a.clubId = c.clubId
-  WHERE a.date < CURRENT_DATE() 
+  WHERE a.date < CURRENT_DATE() ${whereClause}
   ORDER BY a.date DESC 
   LIMIT ${limit} OFFSET ${offset}
 `;
@@ -394,10 +411,25 @@ export const events = async (req, res) => {
     const [pastData] = await db.promise().query(pastSql);
 
     // Get the count of past events and upcoming events
+
+    let countWhereClause = "";
+    if (clubId) {
+      countWhereClause = ` AND clubId = ${clubId}`;
+    }
+    if(type){
+      countWhereClause += ` AND TRIM(activityType) = '${type}'`;
+    }
+    if(from){
+      countWhereClause += ` AND date >= '${from}'`;
+    }
+    if(to){
+      countWhereClause += ` AND date <= '${to}'`;
+    }
+
     const pastCountSql = `
       SELECT COUNT(*) AS pastCount
       FROM activities 
-      WHERE date < CURRENT_DATE()
+      WHERE date < CURRENT_DATE() ${countWhereClause}
     `;
     const [pastCountData] = await db.promise().query(pastCountSql);
     const pastCount = pastCountData[0].pastCount;
@@ -405,7 +437,7 @@ export const events = async (req, res) => {
     const upcomingCountSql = `
       SELECT COUNT(*) AS upcomingCount
       FROM activities 
-      WHERE date >= CURRENT_DATE()
+      WHERE date >= CURRENT_DATE() ${countWhereClause}
     `;
     const [upcomingCountData] = await db.promise().query(upcomingCountSql);
     const upcomingCount = upcomingCountData[0].upcomingCount;
