@@ -11,9 +11,17 @@ const __dirname = path.dirname(
 
 export const getClubDirector = async (req, res) => {
   try {
+    const fetchAll = req.query?.fetchall;
     const clubId = req.clubId;
-    const sql =
-      "SELECT name AS fullName FROM cabinet_officers ORDER BY fullName ASC";
+
+    let sql = "";
+    if (fetchAll === "true") {
+      sql =
+        "SELECT *, name AS fullName FROM cabinet_officers ORDER BY fullName ASC;";
+    } else {
+      sql =
+        "SELECT name AS fullName,member_id FROM cabinet_officers ORDER BY fullName ASC";
+    }
     const data = await db.promise().query(sql, [clubId]);
     return res.status(200).json(data[0]);
   } catch (error) {
@@ -126,7 +134,9 @@ export const deleteActivity = async (req, res) => {
     if (result.affectedRows === 1) {
       return res
         .status(200)
-        .json({ successMessage: `Activity deleted successfully with points ${activityStars}`});
+        .json({
+          successMessage: `Activity deleted successfully with points ${activityStars}`,
+        });
     } else {
       return res.status(404).json({ message: "Activity not found" });
     }
@@ -198,7 +208,7 @@ export const editActivity = async (req, res) => {
     }
 
     const activityStars = rows[0]?.star;
-    
+
     let updateFields = {
       amount,
       activityTitle,
@@ -232,7 +242,6 @@ export const editActivity = async (req, res) => {
       `,
       [prevActivityStars, activityStars, clubId]
     );
-    
 
     // Update the activity with the given activityId
     await db
@@ -244,7 +253,9 @@ export const editActivity = async (req, res) => {
 
     return res
       .status(200)
-      .json({ successMessage: `Activity ${activityId} updated successfully with points ${activityStars}` });
+      .json({
+        successMessage: `Activity ${activityId} updated successfully with points ${activityStars}`,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -369,24 +380,24 @@ export const getActivityStats = async (req, res) => {
 };
 export const events = async (req, res) => {
   try {
-    let { page = 1, limit = 9 ,clubId,type,from,to} = req.query;
+    let { page = 1, limit = 9, clubId, type, from, to } = req.query;
     const offset = (page - 1) * limit;
-    if(type){
-      type=type.trim();
+    if (type) {
+      type = type.trim();
     }
     let whereClause = "";
 
     if (clubId) {
       whereClause = `AND a.clubId = ${clubId}`;
     }
-    if(type){
-        whereClause += ` AND TRIM(a.activityType) = '${type}'`;
+    if (type) {
+      whereClause += ` AND TRIM(a.activityType) = '${type}'`;
     }
-    if(from){
-        whereClause += ` AND a.date >= '${from}'`;
+    if (from) {
+      whereClause += ` AND a.date >= '${from}'`;
     }
-    if(to){
-        whereClause += ` AND a.date <= '${to}'`;
+    if (to) {
+      whereClause += ` AND a.date <= '${to}'`;
     }
 
     const upcomingSql = `
@@ -416,13 +427,13 @@ export const events = async (req, res) => {
     if (clubId) {
       countWhereClause = ` AND clubId = ${clubId}`;
     }
-    if(type){
+    if (type) {
       countWhereClause += ` AND TRIM(activityType) = '${type}'`;
     }
-    if(from){
+    if (from) {
       countWhereClause += ` AND date >= '${from}'`;
     }
-    if(to){
+    if (to) {
       countWhereClause += ` AND date <= '${to}'`;
     }
 
@@ -504,7 +515,7 @@ export const regionActivities = async (req, res) => {
       clubs c ON a.clubId = c.clubId
     WHERE a.clubId IN (?)
   `;
-    const [activitiesData] = await db.promise().query(sql2,[clubIds]);
+    const [activitiesData] = await db.promise().query(sql2, [clubIds]);
 
     return res
       .status(200)
@@ -535,7 +546,7 @@ export const zoneActivities = async (req, res) => {
       clubs c ON a.clubId = c.clubId
     WHERE a.clubId IN (?)
   `;
-    const [activitiesData] = await db.promise().query(sql2,[clubIds]);
+    const [activitiesData] = await db.promise().query(sql2, [clubIds]);
 
     return res
       .status(200)
@@ -545,3 +556,64 @@ export const zoneActivities = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const permanentProject = async (req, res) => {
+  const clubId = req.clubId;
+  const { projectTitle, date, description } = req.body;
+  try {
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/projects/${fileName}`;
+    const folder = path.resolve(__dirname, "..") + imagePath;
+    await writeFile(folder, req.file.buffer);
+
+    const sql =
+      "INSERT INTO projects (clubId, title, date, description, image) VALUES (?, ?, ?, ?, ?)";
+    const [result] = await db
+      .promise()
+      .query(sql, [clubId, projectTitle, date, description, imagePath]);
+    if (result.affectedRows === 1) {
+      return res
+        .status(200)
+        .json({ successMessage: "Project added successfully" });
+    }
+    return res.status(400).json({ successMessage: "Project not added" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const projectDetails = async (req, res) => {
+  let clubId = req.clubId;
+  try {
+    const sql = `SELECT * FROM projects WHERE clubId=?`;
+    const [projects] = await db.promise().query(sql, [clubId]);
+    
+    const sql2 = `SELECT about FROM clubs WHERE clubId=?`;
+    const [about] = await db.promise().query(sql2, [clubId]);
+    return res.status(200).json({projects,about:about[0]?.about});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteProject = async (req, res) => {
+  const { id } = req.query;
+  try {
+    const sql = `DELETE FROM projects WHERE id = ?`;
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows === 1) {
+      return res
+        .status(200)
+        .json({ successMessage: "project deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "project not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
