@@ -158,9 +158,15 @@ export const addReport = async (req, res) => {
 
 export const topClubsByAdmin = async (req, res) => {
   try {
-    const sql =
+    let sql="";
+    if(process.env.DOMAIN_URL.includes("https://lions317f.org")){
+      sql =
+      "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 16";
+    }
+    else{
+      sql =
       "SELECT clubName, adminstars FROM clubs ORDER BY adminstars DESC LIMIT 10";
-
+    }
     const [topClubs] = await db.promise().query(sql);
     if (topClubs.length === 0) {
       return res.status(404).json({ message: "Clubs not found" });
@@ -178,7 +184,7 @@ export const topClubsByAdmin = async (req, res) => {
     return res.status(200).json({ topClubs, topActivityClubs });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
