@@ -561,6 +561,9 @@ export const permanentProject = async (req, res) => {
   const clubId = req.clubId;
   const { projectTitle, date, description } = req.body;
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
     const fileName = uniqueName(req.file.originalname);
     const imagePath = `/images/projects/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
@@ -584,8 +587,14 @@ export const permanentProject = async (req, res) => {
 };
 
 export const projectDetails = async (req, res) => {
-  let clubId = req.clubId;
+  let clubId = req.query.clubId;
+  if(!clubId){
+    clubId = req.clubId;
+  }
   try {
+    if(!clubId){
+      return res.status(400).json({ message: "clubId is required" });
+    }
     const sql = `SELECT * FROM projects WHERE clubId=?`;
     const [projects] = await db.promise().query(sql, [clubId]);
     
@@ -601,6 +610,9 @@ export const projectDetails = async (req, res) => {
 export const deleteProject = async (req, res) => {
   const { id } = req.query;
   try {
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
     const sql = `DELETE FROM projects WHERE id = ?`;
     const [result] = await db.promise().query(sql, [id]);
 
