@@ -27,6 +27,9 @@ export const newsReporting = async (req, res) => {
   const verified = 0;
   const { newsTitle, newsPaperLink, date, description, image } = req.body;
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "image is required" });
+    }
     const fileName = uniqueName(req.file.originalname);
     const imagePath = `/images/news/${fileName}`;
     const folder = path.resolve(__dirname, "..") + imagePath;
@@ -84,6 +87,9 @@ export const topNews = async (req, res) => {
 export const deleteNews = async (req, res) => {
   const { id } = req.query;
   try {
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
     const sql = `DELETE FROM news WHERE newsId = ?`;
     const [result] = await db.promise().query(sql, [id]);
 

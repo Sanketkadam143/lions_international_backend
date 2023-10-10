@@ -22,6 +22,9 @@ export const getFrontendAssets = async (req, res) => {
 
 export const addFrontendAssets = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Please select a file" });
+    }
     const fileName = uniqueName(req.file.originalname);
 
     const filePath = path.resolve(__dirname, "..", "frontend_assets", fileName);

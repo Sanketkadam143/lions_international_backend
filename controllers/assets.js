@@ -1,7 +1,5 @@
 import connection from "../config/dbconnection.js";
-import sharp from "sharp";
 import path from "path";
-import fs from "fs";
 import { uniqueName, writeFile } from "../utils/index.js";
 
 const db = await connection();

@@ -1,5 +1,12 @@
 import connection from "../../config/dbconnection.js";
 const db = await connection();
+import { uniqueName,writeFile } from "../../utils/index.js";
+import path from "path";
+
+const __dirname = path.dirname(
+  new URL(import.meta.url).pathname.replace(/^\/(\w:)/, "$1")
+);
+
 export const getMember = async (req, res) => {
   try {
     const sql =
@@ -302,6 +309,69 @@ export const memberDetails = async (req, res) => {
     memberDetails.title = memberDetails.title.split("-").map((title) => title.trim());
 
     return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const monthlyAwards = async (req, res) => {
+  
+  const { awardTitle, date, description } = req.body;
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
+    }
+    const fileName = uniqueName(req.file.originalname);
+    const imagePath = `/images/monthlyAwards/${fileName}`;
+    const folder = path.resolve(__dirname, "../..") + imagePath;
+    await writeFile(folder, req.file.buffer);
+
+    const sql =
+      "INSERT INTO awards (title, date, description, image_path) VALUES (?, ?, ?, ?)";
+    const [result] = await db
+      .promise()
+      .query(sql, [awardTitle, date, description, imagePath]);
+    if (result.affectedRows === 1) {
+      return res
+        .status(200)
+        .json({ successMessage: "Award added successfully" });
+    }
+    return res.status(400).json({ successMessage: "Award not added" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const getAwards = async (req, res) => {
+  try {
+    const sql = `SELECT id, title, date, description, image_path as image FROM awards ORDER BY date DESC`;
+    const [data] = await db.promise().query(sql);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const deleteAward = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+    const sql = `DELETE FROM awards WHERE id = ?`;
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows === 1) {
+      return res
+        .status(200)
+        .json({ successMessage: "Award deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "Award not found" });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong" });

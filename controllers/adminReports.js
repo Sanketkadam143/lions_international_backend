@@ -93,7 +93,12 @@ export const addReport = async (req, res) => {
       return res.status(400).json({ message: "Please upload a file" });
     }
 
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
+
     let filename = uniqueName(req.file.originalname);
+
 
     const filePath = path.resolve(
       __dirname,
