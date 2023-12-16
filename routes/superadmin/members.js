@@ -1,6 +1,6 @@
 // Router file
 import express from 'express';
-import { getMember,getRegions,getZones,getClub,checkMemberId,addMember,memberDetails,updateMemberInfo,monthlyAwards, getAwards, deleteAward} from '../../controllers/superadmin/members.js';
+import { getMember,getRegions,getZones,getClub,checkMemberId,addMember,memberDetails,updateMemberInfo,monthlyAwards, getAwards, deleteAward,deleteMember} from '../../controllers/superadmin/members.js';
 import superAuth from "../../middleware/superAdmin.js";
 import upload from '../../middleware/imageMulter.js';
 
@@ -17,5 +17,6 @@ router.post('/update',superAuth,updateMemberInfo);
 router.post('/awards',superAuth,upload.single("image"),monthlyAwards);
 router.get('/awards',getAwards);
 router.delete('/awards/:id',superAuth,deleteAward);
+router.delete('/delete/:id',superAuth,deleteMember);
 
 export default router;
