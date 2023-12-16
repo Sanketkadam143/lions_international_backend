@@ -377,3 +377,26 @@ export const deleteAward = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+
+export const deleteMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ message: "id param is required" });
+    }
+
+    const sql = "DELETE FROM users WHERE id = ?";
+    const [result] = await db.promise().query(sql, [id]);
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ successMessage: "Member Deleted Successfully" });
+    } else {
+      return res.status(400).json({ message: "Member Not Found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
