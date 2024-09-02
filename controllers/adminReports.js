@@ -41,7 +41,7 @@ export const getReports = async (req, res) => {
         .json({ message: `Month ${month} reporting allready done` });
     }
 
-    const sql = "SELECT * FROM adminreports WHERE month=?";
+    const sql = "SELECT * FROM adminreports WHERE month=? ORDER BY CAST(srNo AS UNSIGNED), srNo";
     const data = await db.promise().query(sql, [month]);
     if (data[0].length === 0) {
       return res.status(404).json({ message: "Reports not found" });

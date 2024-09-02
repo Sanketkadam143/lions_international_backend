@@ -1,9 +1,10 @@
 import express from "express";
-import { getImages } from "../controllers/images.js";
+import { getImages,VistorCounter } from "../controllers/images.js";
 
 const  router=express.Router();
 
 router.get('/:folder/:filename',getImages);
+router.get('/counter', VistorCounter)
   
   
 
